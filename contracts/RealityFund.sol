@@ -1,4 +1,5 @@
 pragma solidity ^0.4.6;
+import "./ForkonomicsInterface.sol";
 
 contract RealityFund {
 
@@ -23,6 +24,7 @@ contract RealityFund {
         uint256 window; // Day x of the system's operation, starting at UTC 00:00:00
         mapping(bytes32 => int256) balance_change; // user-account debits and credits
         mapping(bytes32 => int256) withdrawal_record;
+        int256 difRealityFundTokens;
     }
     mapping(bytes32 => Branch) branches;
 
@@ -32,7 +34,7 @@ contract RealityFund {
 
     mapping(uint256 => bytes32[]) public window_branches; // index to easily get all branch hashes for a window
     uint256 public genesis_window_timestamp; // 00:00:00 UTC on the day the contract was mined
-
+    bytes32 public genesis_branch_hash=NULL_HASH;
     mapping(address => mapping(address => mapping(bytes32=> uint256))) allowed;
 
     function createArbitratorWhitelist(address[] arbitrators) {
@@ -55,8 +57,8 @@ contract RealityFund {
     public {
         genesis_window_timestamp = now - (now % 86400);
         bytes32 genesis_merkle_root = keccak256("I leave to several futures (not to all) my garden of forking paths");
-        bytes32 genesis_branch_hash = keccak256(abi.encodePacked(NULL_HASH, genesis_merkle_root, NULL_ADDRESS));
-        branches[genesis_branch_hash] = Branch(NULL_HASH, NULL_HASH, now, 0);
+        genesis_branch_hash = keccak256(abi.encodePacked(NULL_HASH, genesis_merkle_root, NULL_ADDRESS));
+        branches[genesis_branch_hash] = Branch(NULL_HASH, NULL_HASH, now, 0,0);
         window_branches[0].push(genesis_branch_hash);
     }
 
@@ -76,13 +78,12 @@ contract RealityFund {
         // However, usually you wouldn't want to do this as it would throw away a lot of history.
         uint256 window = branches[parent_branch_hash].window + 1;
 
-
-        branches[branch_hash] = Branch(parent_branch_hash, whitelist_id, now, window);
+        branches[branch_hash] = Branch(parent_branch_hash, whitelist_id, now, window, 0);
         window_branches[window].push(branch_hash);
         emit BranchCreated(branch_hash, whitelist_id);
         return branch_hash;
     }
-
+    uint256 constant FundingChangeFrequency = 24;
     function createBranchAndChangeFunding(bytes32 parent_branch_hash, bytes32 whitelist_id, address[] forkonomicToken, int[] balanceChange, int[] compensationForBlanceChange) 
     public returns (bytes32) {
 
@@ -100,9 +101,9 @@ contract RealityFund {
         // However, usually you wouldn't want to do this as it would throw away a lot of history.
         uint256 window = branches[parent_branch_hash].window + 1;
 
-        require(window % (4 * 6) == 0 || window == 6);
+        require(window % (FundingChangeFrequency) == 0 || window == 6);
 
-        branches[branch_hash] = Branch(parent_branch_hash, whitelist_id, now, window);
+        branches[branch_hash] = Branch(parent_branch_hash, whitelist_id, now, window, 0);
         window_branches[window].push(branch_hash);
 
 
@@ -110,12 +111,14 @@ contract RealityFund {
         for(uint i=0;i<forkonomicToken.length;i++){
             if(compensationForBlanceChange[i] > 0 && balanceChange[i] > 0){
                 branches[branch_hash].balance_change[keccak256(abi.encodePacked(msg.sender, NULL_HASH))] += compensationForBlanceChange[i];
-                //forkonomicToken[i].transferFrom(msg.sender, this, uint(balanceChange[i]), branch_hash);
+                ForkonomicsInterface(forkonomicToken[i]).transferFrom(msg.sender, this, uint(balanceChange[i]), branch_hash);
+                branches[branch_hash].difRealityFundTokens += compensationForBlanceChange[i];
             }
              if(compensationForBlanceChange[i] < 0 && balanceChange[i] < 0){
                 require(!_isAmountSpendable(keccak256(abi.encodePacked(msg.sender, NULL_HASH)), uint(-compensationForBlanceChange[i]), branch_hash)); // can only spend what you have
                 branches[branch_hash].balance_change[keccak256(abi.encodePacked(msg.sender, NULL_HASH))] -= -compensationForBlanceChange[i];
-                //forkonomicToken[i].transfer(msg.sender, uint(-balanceChange[i]), branch_hash);
+                ForkonomicsInterface(forkonomicToken[i]).transfer(msg.sender, uint(-balanceChange[i]), branch_hash);
+                branches[branch_hash].difRealityFundTokens -= compensationForBlanceChange[i];
             }
         }
 
@@ -287,6 +290,10 @@ contract RealityFund {
     public constant returns (uint id) {
         return branches[_branchHash].window;
     }
+    function getAmountOfRealityFundTokens(bytes32 _branchHash)
+    public constant returns (uint id) {
+        return branches[_branchHash].window;
+    }
 
     function isBranchInBetweenBranches(bytes32 investigationHash,bytes32 closerToRootHash, bytes32 fartherToRootHash)
     public constant returns (bool) {
@@ -300,5 +307,19 @@ contract RealityFund {
         }
         return false;
     }
+    function redeemRealityFundTokens(bytes32 branch, uint amount, address [] forkonomicTokens){
+        require(transferFrom(msg.sender, this, amount, branch));
 
+        int256 totalAmountOfRealityFundToken = 0;
+        bytes32 hash_iteration = branch;
+        while(hash_iteration != genesis_branch_hash){
+            totalAmountOfRealityFundToken += branches[hash_iteration].difRealityFundTokens;
+            hash_iteration = branches[hash_iteration].parent_hash;
+        }
+        for(uint i=0;i<forkonomicTokens.length;i++){
+            uint256 holdings = ForkonomicsInterface(forkonomicTokens[i]).balanceOf(this, branch);
+            //make safe mul
+            ForkonomicsInterface(forkonomicTokens[i]).transfer(msg.sender,amount*holdings/ uint(totalAmountOfRealityFundToken) ,branch);
+        }
+    }
 }
