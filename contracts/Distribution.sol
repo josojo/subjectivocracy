@@ -26,7 +26,7 @@ contract Distribution{
 
     uint256 public template_id=5;
     uint256 public min_bond;
-    uint256 public min_timeout=0;
+    uint32 public min_timeout=0;
     uint32 public opening_ts;
     string public realityCheckQuestion;
     bytes32 public content_hash;
@@ -35,9 +35,9 @@ contract Distribution{
    //Constructor sets the owner of the Distribution
    constructor()
    public {
-     opening_ts = now+30 days;
+     opening_ts = uint32(now+30 days);
      realityCheckQuestion = "Which contract should be able to withdraw funds?";
-     content_hash = keccak256(template_id, opening_ts, realityCheckQuestion);     
+     content_hash = keccak256(abi.encodePacked(template_id, opening_ts, realityCheckQuestion));     
      owner = msg.sender;
    }
 
@@ -74,11 +74,11 @@ contract Distribution{
    function delayDistributionLeftOverTokens(bytes32 hashid_, bytes32 question_id, address arbitrator, address fundsReceiver) public {
 
     // ensure that arbitrator is white-listed
-    require(realityFund.arbitrator_whitelists[hashid_][arbitrator]);
+    require(realityFund.arbitrator_whitelists(hashid_, arbitrator));
     // ensure that fundsReceiver is the right party and that the question_ID fits
-    require(fundsReceiver == realityCheck.getFinalAnswerIfMatches(question_id, content_hash, arbitrator, min_timeout, min_bond));
+    require(fundsReceiver == address(realityCheck.getFinalAnswerIfMatches(question_id, content_hash, arbitrator, min_timeout, min_bond)));
 
-     forkonomicToken.transfer(fundsReceiver, forkonomicToken.balancesOf(this, hashid_), hashid_);
+     forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, hashid_), hashid_);
      emit Withdraw(hashid_, fundsReceiver);
    }
 }

@@ -13,8 +13,8 @@ contract RealityFund {
     bytes32 constant NULL_HASH = "";
     address constant NULL_ADDRESS = 0x0;
 
-    mapping(bytes32=>mapping(address=>bool)) arbitrator_whitelists;
-    mapping(bytes32=>mapping(address=>int)) fund_holdings_changes; 
+    mapping(bytes32=>mapping(address=>bool)) public arbitrator_whitelists;
+    mapping(bytes32=>mapping(address=>int)) public fund_holdings_changes; 
 
     struct Branch {
         bytes32 parent_hash; // Hash of the parent branch.
@@ -24,7 +24,7 @@ contract RealityFund {
         mapping(bytes32 => int256) balance_change; // user-account debits and credits
         mapping(bytes32 => int256) withdrawal_record;
     }
-    mapping(bytes32 => Branch) public branches;
+    mapping(bytes32 => Branch) branches;
 
     // Spends, which may cause debits, can only go forwards.
     // That way when we check if you have enough to spend we only have to go backwards.
@@ -36,8 +36,15 @@ contract RealityFund {
     mapping(address => mapping(address => mapping(bytes32=> uint256))) allowed;
 
     function createArbitratorWhitelist(address[] arbitrators) {
-        for(uint i=0;i<arbitrators.length;i++)
-            arbitrator_whitelists[keccak256(arbitrators)][arbitrators[i]] = true;
+        // generate unique id;
+        bytes32 prev_hash = keccak256(abi.encodePacked(arbitrators[0]));
+        for(uint i=1;i<arbitrators.length;i++){
+            prev_hash = keccak256(abi.encodePacked(prev_hash, arbitrators[i]));
+        }
+        //set abirtrator address as true    
+        for( i=0;i<arbitrators.length;i++){
+            arbitrator_whitelists[prev_hash][arbitrators[i]] = true;
+        }
     }
 
     function isArbitratorWhitelisted(address arb, bytes32 branch) returns (bool) {
@@ -48,7 +55,7 @@ contract RealityFund {
     public {
         genesis_window_timestamp = now - (now % 86400);
         bytes32 genesis_merkle_root = keccak256("I leave to several futures (not to all) my garden of forking paths");
-        bytes32 genesis_branch_hash = keccak256(NULL_HASH, genesis_merkle_root, NULL_ADDRESS);
+        bytes32 genesis_branch_hash = keccak256(abi.encodePacked(NULL_HASH, genesis_merkle_root, NULL_ADDRESS));
         branches[genesis_branch_hash] = Branch(NULL_HASH, NULL_HASH, now, 0);
         window_branches[0].push(genesis_branch_hash);
     }
@@ -56,7 +63,7 @@ contract RealityFund {
     function createBranch(bytes32 parent_branch_hash, bytes32 whitelist_id)
     public returns (bytes32) {
 
-        bytes32 branch_hash = keccak256(parent_branch_hash, whitelist_id);
+        bytes32 branch_hash = keccak256(abi.encodePacked(parent_branch_hash, whitelist_id));
         require(branch_hash != NULL_HASH);
 
         // Your branch must not yet exist, the parent branch must exist.
@@ -80,7 +87,7 @@ contract RealityFund {
     public returns (bytes32) {
 
         //Todo incorporate balance changes into hash
-        bytes32 branch_hash = keccak256(parent_branch_hash, whitelist_id);
+        bytes32 branch_hash = keccak256(abi.encodePacked(parent_branch_hash, whitelist_id));
         require(branch_hash != NULL_HASH);
 
         // Your branch must not yet exist, the parent branch must exist.
@@ -102,12 +109,12 @@ contract RealityFund {
         //Balance changes
         for(uint i=0;i<forkonomicToken.length;i++){
             if(compensationForBlanceChange[i] > 0 && balanceChange[i] > 0){
-                branches[branch_hash].balance_change[keccak256(msg.sender, NULL_HASH)] += compensationForBlanceChange[i];
+                branches[branch_hash].balance_change[keccak256(abi.encodePacked(msg.sender, NULL_HASH))] += compensationForBlanceChange[i];
                 //forkonomicToken[i].transferFrom(msg.sender, this, uint(balanceChange[i]), branch_hash);
             }
              if(compensationForBlanceChange[i] < 0 && balanceChange[i] < 0){
-                require(!_isAmountSpendable(keccak256(msg.sender, NULL_HASH), uint(-compensationForBlanceChange), branch_hash)); // can only spend what you have
-                branches[branch_hash].balance_change[keccak256(msg.sender, NULL_HASH)] -= -compensationForBlanceChange[i];
+                require(!_isAmountSpendable(keccak256(abi.encodePacked(msg.sender, NULL_HASH)), uint(-compensationForBlanceChange[i]), branch_hash)); // can only spend what you have
+                branches[branch_hash].balance_change[keccak256(abi.encodePacked(msg.sender, NULL_HASH))] -= -compensationForBlanceChange[i];
                 //forkonomicToken[i].transfer(msg.sender, uint(-balanceChange[i]), branch_hash);
             }
         }
@@ -142,7 +149,7 @@ contract RealityFund {
     public constant returns (uint256) {
         int256 bal = 0;
         while(branch != NULL_HASH) {
-            bal += branches[branch].balance_change[keccak256(addr, acct)];
+            bal += branches[branch].balance_change[keccak256(abi.encodePacked(addr, acct))];
             branch = branches[branch].parent_hash;
         }
         return uint256(bal);
@@ -168,12 +175,12 @@ contract RealityFund {
 
     function isAmountSpendable(address addr, uint256 _min_balance, bytes32 branch_hash)
     public constant returns (bool) {
-        return _isAmountSpendable(keccak256(addr, NULL_HASH), _min_balance, branch_hash);
+        return _isAmountSpendable(keccak256(abi.encodePacked(addr, NULL_HASH)), _min_balance, branch_hash);
     }
 
     function isBoxAmountSpendable(address addr, uint256 _min_balance, bytes32 branch_hash, bytes32 box)
     public constant returns (bool) {
-        return _isAmountSpendable(keccak256(addr, box), _min_balance, branch_hash);
+        return _isAmountSpendable(keccak256(abi.encodePacked(addr, box)), _min_balance, branch_hash);
     }
 
     function boxTransferFrom(address from_addr, address to_addr, uint256 amount, bytes32 branch, bytes32 from_box, bytes32 to_box)
@@ -186,12 +193,12 @@ contract RealityFund {
         require(amount <= 2100000000000000);
         require(branches[branch].timestamp > 0); // branch must exist
 
-        if (branch_window < last_debit_windows[keccak256(from_addr, NULL_HASH)]) return false; // debits can't go backwards
-        if (!_isAmountSpendable(keccak256(from_addr, from_box), amount, branch)) return false; // can only spend what you have
+        if (branch_window < last_debit_windows[keccak256(abi.encodePacked(from_addr, NULL_HASH))]) return false; // debits can't go backwards
+        if (!_isAmountSpendable(keccak256(abi.encodePacked(from_addr, from_box)), amount, branch)) return false; // can only spend what you have
 
-        last_debit_windows[keccak256(from_addr, NULL_HASH)] = branch_window;
-        branches[branch].balance_change[keccak256(from_addr, from_box)] -= int256(amount);
-        branches[branch].balance_change[keccak256(to_addr, to_box)] += int256(amount);
+        last_debit_windows[keccak256(abi.encodePacked(from_addr, NULL_HASH))] = branch_window;
+        branches[branch].balance_change[keccak256(abi.encodePacked(from_addr, from_box))] -= int256(amount);
+        branches[branch].balance_change[keccak256(abi.encodePacked(to_addr, to_box))] += int256(amount);
 
         uint256 allowed_before = allowed[from_addr][msg.sender][branch];
         uint256 allowed_after = allowed_before - amount;
@@ -204,14 +211,14 @@ contract RealityFund {
 
     function recordBoxWithdrawal(bytes32 box, uint256 amount, bytes32 branch) {
         require(branches[branch].timestamp > 0); // branch must exist
-        branches[branch].withdrawal_record[keccak256(msg.sender, box)] += int256(amount);
+        branches[branch].withdrawal_record[keccak256(abi.encodePacked(msg.sender, box))] += int256(amount);
     }
 
     function hasBoxWithdrawal(address owner, bytes32 box, bytes32 branch_hash, bytes32 earliest_possible_branch)
     public view returns (bool) {
-        bytes32 id = keccak256(owner, box);
+        bytes32 id = keccak256(abi.encodePacked(owner, box));
         while(branch_hash != NULL_HASH && branch_hash != earliest_possible_branch) {
-            if (branches[branch_hash].withdrawal_record[id]) {
+            if (branches[branch_hash].withdrawal_record[id]>0) {
                 return true;
             }
             branch_hash = branches[branch_hash].parent_hash;
@@ -221,7 +228,7 @@ contract RealityFund {
 
     function recordedBoxWithdrawalAmount(address owner, bytes32 box, bytes32 branch_hash, bytes32 earliest_possible_branch, uint _min_balance) 
     public view returns (uint256) {
-        bytes32 id = keccak256(owner, box);
+        bytes32 id = keccak256(abi.encodePacked(owner, box));
         int256 bal = 0;
         int256 min_balance = int256(_min_balance);
         while(branch_hash != NULL_HASH && branch_hash != earliest_possible_branch) {
@@ -248,12 +255,12 @@ contract RealityFund {
         require(amount <= 2100000000000000);
         require(branches[branch].timestamp > 0); // branch must exist
 
-        if (branch_window < last_debit_windows[keccak256(msg.sender, from_box)]) return false; // debits can't go backwards
-        if (!_isAmountSpendable(keccak256(msg.sender, from_box), amount, branch)) return false; // can only spend what you have
+        if (branch_window < last_debit_windows[keccak256(abi.encodePacked(msg.sender, from_box))]) return false; // debits can't go backwards
+        if (!_isAmountSpendable(keccak256(abi.encodePacked(msg.sender, from_box)), amount, branch)) return false; // can only spend what you have
 
-        last_debit_windows[keccak256(msg.sender, from_box)] = branch_window;
-        branches[branch].balance_change[keccak256(msg.sender, from_box)] -= int256(amount);
-        branches[branch].balance_change[keccak256(addr, to_box)] += int256(amount);
+        last_debit_windows[keccak256(abi.encodePacked(msg.sender, from_box))] = branch_window;
+        branches[branch].balance_change[keccak256(abi.encodePacked(msg.sender, from_box))] -= int256(amount);
+        branches[branch].balance_change[keccak256(abi.encodePacked(addr, to_box))] += int256(amount);
 
         emit Transfer(msg.sender, addr, from_box, to_box, amount, branch);
 
@@ -270,15 +277,11 @@ contract RealityFund {
         return branches[hash].timestamp;
     }
 
-    function boxTransferFrom(address addr, uint256 amount, bytes32 branch, bytes32 from_box)
+    function boxTransferFrom(address addr,address addr_to, uint256 amount, bytes32 branch, bytes32 from_box)
     public returns (bool) {
-        return boxTransferFrom(addr, amount, branch, from_box, NULL_HASH);
+        return boxTransferFrom(addr, addr_to, amount, branch, from_box, NULL_HASH);
     }
 
-    function getDataContract(bytes32 _branch)
-    public constant returns (address) {
-        return branches[_branch].data_cntrct;
-    }
 
     function getWindowOfBranch(bytes32 _branchHash)
     public constant returns (uint id) {
