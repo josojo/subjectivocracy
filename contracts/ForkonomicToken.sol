@@ -1,11 +1,10 @@
 pragma solidity ^0.4.18;
-import "./RealityFund.sol";
+import "./ForkonomicSystem.sol";
 
 contract ForkonomicToken {
 
     event Approval(address indexed _owner, address indexed _spender, uint _value, bytes32 branch);
     event Transfer(address indexed _from, address indexed _to, bytes32 _from_box, bytes32 _to_box, uint _value, bytes32 branch);
-    event BranchCreated(bytes32 hash, address data_cntrct);
 
     string public constant name = "RealityToken";
     string public constant symbol = "RLT";
@@ -23,11 +22,11 @@ contract ForkonomicToken {
     mapping(bytes32 => uint256) public last_debit_windows; // index of last user debits to stop you going backwards
 
     mapping(address => mapping(address => mapping(bytes32=> uint256))) allowed;
-    RealityFund public realityContainer;
+    ForkonomicSystem public fSystem;
 
-    constructor(RealityFund _realityContainer, address[] inital_funding_contracts)
+    constructor(ForkonomicSystem _fSystem, address[] inital_funding_contracts)
     public {
-        realityContainer = _realityContainer;
+        fSystem = _fSystem;
         bytes32 genesis_merkle_root = keccak256("I leave to several futures (not to all) my garden of forking paths");
         bytes32 genesis_branch_hash = keccak256(abi.encodePacked(NULL_HASH, genesis_merkle_root, NULL_ADDRESS));
 
@@ -62,7 +61,7 @@ contract ForkonomicToken {
         int256 bal = 0;
         while(branch != NULL_HASH) {
             bal += balance_change[branch][keccak256(abi.encodePacked(addr, acct))];
-            branch = realityContainer.getParentHash(branch);
+            branch = fSystem.getParentHash(branch);
         }
         return uint256(bal);
     }
@@ -77,7 +76,7 @@ contract ForkonomicToken {
         int256 min_balance = int256(_min_balance);
         while(branch_hash != NULL_HASH) {
             bal += balance_change[branch_hash][acct];
-            branch_hash = realityContainer.getParentHash(branch_hash);
+            branch_hash = fSystem.getParentHash(branch_hash);
             if (bal >= min_balance) {
                 return true;
             }
@@ -100,10 +99,10 @@ contract ForkonomicToken {
 
         require(allowed[from_addr][msg.sender][branch] >= amount);
 
-        uint256 branch_window = realityContainer.getWindowOfBranch(branch);
+        uint256 branch_window = fSystem.getWindowOfBranch(branch);
 
         require(amount <= 2100000000000000);
-        require(realityContainer.getTimestampOfBranch(branch) > 0); // branch must exist
+        require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
 
         if (branch_window < last_debit_windows[keccak256(abi.encodePacked(from_addr, NULL_HASH))]) return false; // debits can't go backwards
         if (!_isAmountSpendable(keccak256(abi.encodePacked(from_addr, from_box)), amount, branch)) return false; // can only spend what you have
@@ -122,7 +121,7 @@ contract ForkonomicToken {
     }
 
     function recordBoxWithdrawal(bytes32 box, uint256 amount, bytes32 branch) {
-        require(realityContainer.getTimestampOfBranch(branch) > 0); // branch must exist
+        require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
         withdrawal_record[branch][keccak256(abi.encodePacked(msg.sender, box))] += int256(amount);
     }
 
@@ -133,7 +132,7 @@ contract ForkonomicToken {
             if (withdrawal_record[branch_hash][id]>0) {
                 return true;
             }
-            branch_hash = realityContainer.getParentHash(branch_hash);
+            branch_hash = fSystem.getParentHash(branch_hash);
         }
         return false;
     }
@@ -145,7 +144,7 @@ contract ForkonomicToken {
         int256 min_balance = int256(_min_balance);
         while(branch_hash != NULL_HASH && branch_hash != earliest_possible_branch) {
             bal += withdrawal_record[branch_hash][id];
-            branch_hash = realityContainer.getParentHash(branch_hash);
+            branch_hash = fSystem.getParentHash(branch_hash);
         }
         return uint256(bal);
     }
@@ -162,10 +161,10 @@ contract ForkonomicToken {
 
     function boxTransfer(address addr, uint256 amount, bytes32 branch, bytes32 from_box, bytes32 to_box)
     public returns (bool) {
-        uint256 branch_window = realityContainer.getWindowOfBranch(branch);
+        uint256 branch_window = fSystem.getWindowOfBranch(branch);
 
         require(amount <= 2100000000000000);
-        require(realityContainer.getTimestampOfBranch(branch) > 0); // branch must exist
+        require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
 
         if (branch_window < last_debit_windows[keccak256(abi.encodePacked(msg.sender, from_box))]) return false; // debits can't go backwards
         if (!_isAmountSpendable(keccak256(abi.encodePacked(msg.sender, from_box)), amount, branch)) return false; // can only spend what you have

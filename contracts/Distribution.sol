@@ -9,8 +9,8 @@ contract Distribution{
    bool isFinished;
    ForkonomicToken public forkonomicToken;
    RealityCheck public realityCheck;
-   RealityFund public realityFund;
-
+   ForkonomicSystem public fSystem;
+   
    event Withdraw(bytes32 hashid, address user);
 
    modifier isOwner(){
@@ -36,15 +36,15 @@ contract Distribution{
    constructor()
    public {
      opening_ts = uint32(now+30 days);
-     realityCheckQuestion = "Which contract should be able to withdraw funds?";
+     realityCheckQuestion = "Which contract should be able to withdraw RLT funds?";
      content_hash = keccak256(abi.encodePacked(template_id, opening_ts, realityCheckQuestion));     
      owner = msg.sender;
    }
 
-   function setRealityVariables(ForkonomicToken _forkonomicToken, RealityCheck _realityCheck, RealityFund _realityFund)
+   function setRealityVariables(ForkonomicToken _forkonomicToken, RealityCheck _realityCheck, ForkonomicSystem _fSystem)
    public {
       forkonomicToken = _forkonomicToken;
-      realityFund = _realityFund;
+      fSystem = _fSystem;
       realityCheck = _realityCheck;
    }
    //@param users list of users that should be rewarded
@@ -74,7 +74,7 @@ contract Distribution{
    function delayDistributionLeftOverTokens(bytes32 hashid_, bytes32 question_id, address arbitrator, address fundsReceiver) public {
 
     // ensure that arbitrator is white-listed
-    require(realityFund.arbitrator_whitelists(hashid_, arbitrator));
+    require(fSystem.arbitrator_whitelists(hashid_, arbitrator));
     // ensure that fundsReceiver is the right party and that the question_ID fits
     require(fundsReceiver == address(realityCheck.getFinalAnswerIfMatches(question_id, content_hash, arbitrator, min_timeout, min_bond)));
 
