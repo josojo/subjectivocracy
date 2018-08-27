@@ -4,9 +4,11 @@ import "./ForkonomicToken.sol";
 import "./RealityCheck.sol";
 
 contract Distribution{
+
    mapping(address => uint256) balances;
    address public owner;
    bool isFinished;
+
    ForkonomicToken public forkonomicToken;
    RealityCheck public realityCheck;
    ForkonomicSystem public fSystem;
@@ -17,7 +19,6 @@ contract Distribution{
     require(msg.sender == owner);
     _;
    }
-
 
    modifier notYetFinished(){
     require(!isFinished);
@@ -41,12 +42,14 @@ contract Distribution{
      owner = msg.sender;
    }
 
+   // variables, which we were not able to hand over to the constructor
    function setRealityVariables(ForkonomicToken _forkonomicToken, RealityCheck _realityCheck, ForkonomicSystem _fSystem)
    public {
       forkonomicToken = _forkonomicToken;
       fSystem = _fSystem;
       realityCheck = _realityCheck;
    }
+
    //@param users list of users that should be rewarded
    //@param fundAmount list of amounts the users should be funded with
    function injectReward(address[] user, uint[] fundAmount_)
@@ -58,6 +61,7 @@ contract Distribution{
           balances[user[i]] = fundAmount_[i];
    }
 
+   // to be called once all rewards are injected
    function finalize()
    isOwner()
    public{
@@ -70,15 +74,17 @@ contract Distribution{
      balances[msg.sender] = 0;
      emit Withdraw(hashid_, msg.sender);
    }
-    // param hashid_ hashid_ should be the hash of the branch 
+  
+  // param hashid_ hashid_ should be the hash of the branch 
    function delayDistributionLeftOverTokens(bytes32 hashid_, bytes32 question_id, address arbitrator, address fundsReceiver) public {
 
     // ensure that arbitrator is white-listed
-    require(fSystem.arbitrator_whitelists(hashid_, arbitrator));
+    require(fSystem.isArbitratorWhitelisted( arbitrator, hashid_));
     // ensure that fundsReceiver is the right party and that the question_ID fits
     require(fundsReceiver == address(realityCheck.getFinalAnswerIfMatches(question_id, content_hash, arbitrator, min_timeout, min_bond)));
+    // send acutal funds to another distribution contract
+    require(forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, hashid_), hashid_));
 
-     forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, hashid_), hashid_);
-     emit Withdraw(hashid_, fundsReceiver);
+    emit Withdraw(hashid_, fundsReceiver);
    }
 }

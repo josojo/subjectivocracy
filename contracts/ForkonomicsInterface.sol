@@ -43,7 +43,7 @@ contract ForkonomicsInterface{
     function hasBoxWithdrawal(address owner, bytes32 box, bytes32 branch_hash, bytes32 earliest_possible_branch) 
     public view returns (bool);
 
-    function recordedBoxWithdrawalAmount(address owner, bytes32 box, bytes32 branch_hash, bytes32 earliest_possible_branch, uint _min_balance) 
+    function recordedBoxWithdrawalAmount(address owner, bytes32 box, bytes32 branch_hash, bytes32 earliest_possible_branch) 
     public view returns (uint256);
 
     function transfer(address addr, uint256 amount, bytes32 branch)
