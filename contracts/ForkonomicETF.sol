@@ -81,8 +81,9 @@ contract ForkonomicETF is ForkonomicToken {
         bytes32 content_hash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
         uint ans = uint(realityCheck.getFinalAnswerIfMatches(question_ID, content_hash, arbitrator, min_timeout, opening_ts));
 
-        //if the request has not been accepted
+        // processing the actual fund transfers
         if(ans == 0){
+            //if the request has not been accepted
             if(balanceChange>0){
                require(!ForkonomicsInterface(forkonomicToken).hasBoxWithdrawal(msg.sender, NULL_HASH, executionbranch, originalbranch)); 
                require(ForkonomicsInterface(forkonomicToken).boxTransfer( msg.sender, uint(balanceChange), executionbranch, Proposal_HASH, NULL_HASH));
