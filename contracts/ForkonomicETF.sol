@@ -24,8 +24,8 @@ contract ForkonomicETF is ForkonomicToken {
     bytes32 public genesis_branch_hash;
     
     uint256 public template_id=0;
-    uint256 public min_bond = 500000;
-    uint32 public min_timeout=500000;
+    uint256 public min_bond = 50000000000000000;
+    uint32 public min_timeout= 1 day;
     uint32 public opening_ts;
     uint256 public minQuestionFunding =50000000000000000; // minimul payment for a funding request is 0.05 ETH. This is used in realitycheck
     bytes32 constant Proposal_HASH = "214"; // hash for identifying the deposited funds
@@ -56,7 +56,7 @@ contract ForkonomicETF is ForkonomicToken {
         require(msg.value>=minQuestionFunding);
 
         //posting question
-        opening_ts = uint32(now+30 days);
+        opening_ts = uint32(now +30 days);
         bytes32 deal = keccak256(abi.encodePacked(branch, forkonomicToken, balanceChange, compensation, msg.sender));
         string memory question = string(abi.encodePacked("Should the FETF take the deal:", bytes32ToString(bytes32(deal)),"?"));
         bytes32 content_hash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
@@ -102,7 +102,7 @@ contract ForkonomicETF is ForkonomicToken {
                 fETFbalanceChange[executionbranch] += compensation;
                 recordBoxWithdrawal(NULL_HASH, uint(compensation), executionbranch);
             }
-            //burn credited fETF-tokens
+            //send out the tokens to requestStarter, burn credited fETF-tokens
             else{
                 require(!ForkonomicsInterface(forkonomicToken).hasBoxWithdrawal(msg.sender, NULL_HASH, executionbranch, originalbranch));
                 require(ForkonomicsInterface(forkonomicToken).transfer(msg.sender, uint(balanceChange), executionbranch));
@@ -134,13 +134,13 @@ contract ForkonomicETF is ForkonomicToken {
     }
 
     function bytes32ToString (bytes32 data) returns (string) {
-    bytes memory bytesString = new bytes(32);
-    for (uint j=0; j<32; j++) {
-        byte char = byte(bytes32(uint(data) * 2 ** (8 * j)));
-        if (char != 0) {
-            bytesString[j] = char;
+        bytes memory bytesString = new bytes(32);
+        for (uint j=0; j<32; j++) {
+            byte char = byte(bytes32(uint(data) * 2 ** (8 * j)));
+            if (char != 0) {
+                bytesString[j] = char;
+            }
         }
+        return string(bytesString);
     }
-    return string(bytesString);
-}
 }
