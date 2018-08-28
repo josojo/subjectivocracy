@@ -1,8 +1,14 @@
-RealityToken
+Forkonomics
 =======
 
 
-Collection of smart contracts that form the basis of the RealityToken ecosystem.
+Collection of smart contracts for the Forkonomic-ecosystem.
+
+
+Documentation
+-------------
+
+Please see the attached Forkonomics.md
 
 
 Audit
@@ -54,13 +60,9 @@ truffle migrate --network NETWORK-NAME
 ```
 
 
-Documentation
--------------
-
-Please see the attached realitytoken.pdf
 
 
 Contributors
 ------------
-- Edmund Edgar ([dteiml](https://github.com/edmundedgar))
+- Edmund Edgar ([edmundedgar](https://github.com/edmundedgar))
 - Alexander ([josojo](https://github.com/josojo))

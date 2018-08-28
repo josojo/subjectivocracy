@@ -13,7 +13,7 @@ Alexander Herrmann
 
 ## Abstract
 
-The Forkonomics framework is a protocol for attaching value transfers to a particular bundle of facts and propositions. The fundamental pillar of this protocol is the principle of forking: Tokens can be forked into different branches. Each branch is associated with arbitrators. Arbitrators represent certain sets of facts and propositions. Smart contracts can read these arbitrators, their facts and the proposition from each branch and act upon these facts. 
+The Forkonomics framework is a protocol for attaching value transfers to a particular bundle of facts and propositions. The fundamental pillar of this protocol is the principle of forking: Tokens can be forked into different branches. Each branch is associated with a set of arbitrators. Arbitrators represent certain sets of facts and propositions. Smart contracts can read these arbitrators, their facts and the proposition from each branch and act upon these facts. 
 
 Using this principle, any escalated contention about a correct decision of an arbitrator can be resolved in a very democratic manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch.
 
@@ -21,22 +21,33 @@ The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol. The
 
 # Introduction
 
-Linking information from our reality into the blockchain world is a challenging problem. In general, building arbitration systems about subjective manner on the blockchain is a hard problem. Many proposed systems suffer from bribing attacks, high fees or oligarchy setups.
+Linking information from our reality into the blockchain world is a challenging problem. In general, building arbitration systems about subjective manners on the blockchain is a hard problem. Many proposed systems suffer from bribing attacks, high fees or oligarchy setups.
 
-Subjectivocracy solves many of these challenges, as elaborated here[]. In contrast to many other proposals, subjectivocracy does no longer tries to find a unique answer to a question but incorporates different answers or judgments on different branches of the system. The system forks regularly and writes different subjective opinions about a fact into the different branches. Users have to recognize these different answers and they have to subjectively choose their correct branch. As the platform for finding the truth is no longer the smart contracts per se, but the various social platform, any manipulation or bribing attack is hard and involves manipulating the public opinion.
+Subjectivocracy solves many of these challenges, as elaborated [here](https://blog.ethereum.org/2015/02/14/subjectivity-exploitability-tradeoff/). In contrast to many other proposals, subjectivocracy does no longer tries to find a unique answer to a question but incorporates different answers or judgments on different branches of the system. The system forks regularly and writes different subjective opinions about a fact into the different branches. Users have to recognize these different answers and they have to subjectively choose their correct branch. As the platform for finding the truth is no longer the smart contracts per se, but the various social platform, any manipulation is hard and must involve manipulating the public opinion.
 
-As pure subjectivocracy might end up with many, many forks and a hassle for the users to choose the correct fork, this concept is improved via two mechanisms: Arbitrators selection and escalation betting.
+As pure subjectivocracy might end up with many forks and a hassle for the users to choose the correct fork, this concept is improved via two mechanisms: Arbitrators selection and escalation betting.
 Instead of deciding on pure facts, branches only represent a list of reputable arbitrators. The facts and the propositions of the branch are only indirectly represented via the arbitrator's propositions. If an arbitrator makes a disputable answer, then anyone can just create a new branch delisting this arbitrator.
-Making arbitrators decide on each question is quite inefficient. Therefore, an escalation game, where people can bet on the decision of the arbitrator is in place. 
+Making arbitrators decide on each question is quite inefficient. Therefore, an escalation game, where people can bet on the decision of the arbitrator, is in place. 
 This system, the subjectivocray advanced by escalation betting and arbitrator selection is called a forkonomic system.
 
-One fundamental building block of a subjectivocracy system is that there needs to be token, which can easily be forked into the different branches. It is crucial that this token has the best possible value proposition, as payments of the system need to be settled within this token. Using an Exchange-Traded-Fund(ETF) of tokens, which support the forkonomic protocol is the best option for this subjectivocracy token, as ETF's have the best value proposition over the long term.
+One fundamental building block of a subjectivocracy system is that there needs to be collateral-token, which is used for the settlement of all value transfers within the system. This collateral token is required to fulfill the following to conditions:
+1. it can easily be forked into the different branches.
+2. the token needs to a proper value proposition, as users expect the token to keep a steady value
+
+The first point is essential for the workings of the system. The second one is important as users of the ecosystem should be very comfortable holding the token used for any interactions. This underlying collateral token should have the volatility risks spread out well and should have a good value proposition. Using an Exchange-Traded-Fund(ETF) of tokens, which support the forkonomic protocol, as the collateral token is a good choice, as ETFs are known as tool for spreading risk and have a very good value proposition.
 
 ## Key Building Blocks
 
-### Realit.io - asking questions
+### Realit.io - asking for facts
 
-Realit.io has built a platform, which increases the efficiency of arbitration. On this platform, questions can be asked for an arbitrary arbitrator. When the question can be resolved, the arbitrator does not need to take action. Peers from the platform can provide the question's answer and a bond. If someones see that the wrong an incorrect answer was provided, then they can correct the answer, but they need to double the bond. This game escalates pretty quickly, as in each challenge the bond needs to be escalated. Only if the bonding reaches a certain threshold, it gets profitable to pay the arbitrator and arbitrate between the different bonded answers.
+Realit.io has built a platform, which increases the efficiency of arbitration. On this platform, people can request the provision of answers to their questions. Each time a question is asked, the asker needs to specify an arbitrator, who will make the final arbitration, in case the peers on the platform cannot find a consensus about the correct answers to the question. The consensus about a questions answer is found with the following procedure: Peers from the platform can provide the question's answer and a bond. If someones see that the wrong an incorrect answer was provided, then they can correct the answer, but they need to double the bond. This game escalates pretty quickly, as in each challenge the bond needs to be doubled. Only if the bonding reaches a certain threshold, it gets profitable for the participants to pay the arbitrator and let the arbitrator decided about the final answer to the question. Peers, which bonded on an incorrect answer lose their bonds and peers bonding on the correct answer get a reward.
+
+Overall this process makes arbitration very efficient for the arbitrator and reduces the costs for getting an answer to general knowledge questions or arbitrations on the blockchain ecosystem.
+
+While realit.io is very efficient and effective, there might be the need for different escalation games depending on the application. If there are at some point several platforms with different escalation games, the forkonomic dapps could use the platform fitting the best to their needs.
+Especially, it might be better for customers of the system to play these escalation games in a forkable token, and not just with Ether. It has the benefit that escalation games participants have a natural protection about the bad decision of arbitrators and hence are more willing to escalate these escalation games.
+
+### Forkonomic-protocol - doing arbitration 
 
 Any question entering the forkonomic system should get asked on Realit.io with an arbitrator from a branch. 
 Now, there are 3 outcomes:
@@ -47,9 +58,6 @@ Now, the answer needs to be provided by the arbitrator. In most cases, the arbit
 3. The question gets escalated to the arbitrator and the arbitrator is dishonest.
 Such a situation should create a big social outcry. People would get aware of this malicious behavior of the arbitrator and they would start to create new branches delisting the arbitrator from the system. The smart contracts of the forkonomic system will only read the answer from realit.io on branches, where the arbitrator is still listed. For the other branches, the question needs to be resubmitted to realit.io with another valid arbitrator. Then the escalation game starts again and the process repeats itself.
 
-While realit.io is very efficient and effective, there might be the need for different escalation games depending on the application. If there are at some point several platforms, the forkonomic dapps could use the platform fitting the best to their needs.
-
-### Forkonomic-protocol - doing arbitration 
 
 The forkonomic-protocol does the ultimate arbitration of the arbitrator list. As pointed out before, the forkonomic system allows anyone to fork the system and introduce a new branch with a new list of arbitrators. Whenever someone feels that the arbitrator list should be altered, may it due to an incorrect behavior of the arbitrator or due to an addition of further arbitrators, a new branch can be added on a smart contract level (cf. ForkonomicSystem.sol). The addition of the new branch is basically free, but getting people adapting to it is the real cost. 
 A new branch will only get adaption, if it benefits the Forknomic-system, other branches will be left behind quickly. This benefit could be the elimination of bad arbitrators or a well-discussed addition of new arbitrators. This is a reinforcement system, where bad decision won't be adapted, as they hurt the system and good decision will be adapted, as they benefit the system. Others would describe this system as a token curated list of a good decision.
@@ -75,9 +83,22 @@ This process allows a fund management based on an arbitrator managing the fund. 
 
 The Forkonomics-ETF plays a central role in the Forkonomics ecosystem. The forkonomic system is a platform for value transfers conditional to propositions or arbitrator decisions. As mentioned before, in order to use subjectivocracy all payments need to be performed with a forkable token as collateral. Probably, the Forkonomics-ETF token is the preferred collateral in the ecosystem, as it backed by stocks with relatively well spread risks.
 
+The forkonomic-ETF will hold forknomoic-tokens according to some rulset. Although this rule set will be adapted over time to reflect the growth of the eco system, we do not hestiate on formulating some rules:
+
+1. The forkonomic-token needs to be fully compatible with the branching mechanism and the adapted ERC20-functionality as described in ForknomicToken.sol
+2. If the issuing company makes profit on a branch X, then this profit needs to be used to increase the issued token value on exactly the same branch, not a competipor branch. 
+3. Additional requirements on reporting figures and revenue streams. TBD.
+
+The first rule ensure that the ETF can itself follow the forkonomics protocol and the second rule ensures that the ETF will have the most value on the most used/valueable branch of the forkonomic system.
+
 ###	RealityToken - Bootstrapping the system
 
-...
+The RealityToken, has a very special role. It will not just be the very first token being added to the forkonomic-ETF, it will help bootstrap the whole Forkonomic system. 
+The value proposition of realityToken will come from the fact that the system will require every arbitrator arbitrating for the ecosystem, will have to receive the payment for the arbitration in realityToken and they have to burn have of the tokens. If they do not do it, they will be forked out of the list of trusted arbitrators.
+If questions on realit.io will not be esclated to the arbitrator, then no realityTokens will be burned.
+Additionally, RealityTokens will have value, as they will be the initial dominat currency of the Forkonomic-System. Although this might change over time, when the forkonomic-ETF will become the dominat currency of the system.
+
+RealityTokens will be distributed in a unique manner: All tokens are created at the at once at the beginning, but they are stored in so called distribution contracts. Arbitrators can arbitrate that the distribution contracts should fund specific projects of the eco-system. This means that the tokens will not be sold, but they are used as reward mechansim for building infrastructure. Although the arbitrators have quite some power in the fund distribution, the utlimtate decision is made by the collective of all token holders, as they have the power to change the arbitrators.
 
 ### Forknomonics - Cooperations
 
@@ -85,11 +106,22 @@ We can imagine a wide spread of application of this forkonomics system. Here, we
 
 #### Examples:
 
-1. Insurances: Hurricane parametric insurance, Flood parametric insurance, fire insurances, car insurances, employment insurances. The intelligent insurance policy selection process of insurance DAO's in order to cover policies with well-spread risk ( this would also allow fraction default coverage).
-2. Derivative Markets: All kind of markets for trading derivatives in a decentralized fashing can be built. These derivatives could be once tokenized and then later freely be traded on plasma exchanges
+1. Insurances: Hurricane parametric insurance, Flood parametric insurance, fire insurances, car insurances, employment insurances.
+1.1 A fund which buys well-spread insurance policies with only a fractional covering of the policies involved. The risks should be well of the policies should be so well spread that a fraction coverage is justified, as it currently is in the traditional insurance industry via Basel 3.
+2. Derivative Markets: All kind of markets for trading derivatives in a decentralized fashion can be built. These derivatives could be once tokenized and then later freely be traded on any exchanges, also plasma exchanges
 3. Gambling applications
 4. Arbitration between contract partners
 5. Arbitration platform for gitcoin like projects
+6. Stable coins with truely decentralized price feed
+7. Tokenization of Events
+8. ...
+
+
+
+### Governance in Forknomonics
+
+Forkonomics takes a very practical approach for the governance system. Dapps in this system have a unique way to be governed: These dapps can simply ask the dedicated arbitrators, which decision the dapp should take. This enables a very efficient and fast decision making. Only if there is a bigger disagreement within the community with the decisions of the arbitrators, then the decision can be undone in another fork and the arbitrator can be altered.
+This process is quite similar as decision are taken in modern societies. Usually, the nation trust elected leaders, which do most of the decision making. Only, if there is a public outcry about specific decision, the decision can be undone and the person making the bad decision will be removed from their mighty positions. 
 
 ### Timeline:
 
