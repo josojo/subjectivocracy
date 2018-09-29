@@ -1,12 +1,14 @@
-pragma solidity ^0.4.6;
-import "./ForkonomicsInterface.sol";
+pragma solidity ^0.4.22;
 
-contract ForkonomicSystem{
+
+contract ForkonomicSystem {
 
     event BranchCreated(bytes32 hash, bytes32 whiteList_id);
 
     bytes32 constant NULL_HASH = "";
     address constant NULL_ADDRESS = 0x0;
+    uint256 public WINDOWTIMESPAN = 86400; 
+
 
     // index_arbitrators => arbitrator => isSelected
     mapping(bytes32=>mapping(address=>bool)) public arbitratorWhitelists;
@@ -19,61 +21,63 @@ contract ForkonomicSystem{
     // branch => id
     mapping(bytes32 => bytes32) public branchArbitratorsID;
     // window => branches[]
-    mapping(uint256 => bytes32[]) public window_branches; // index to easily get all branch hashes for a window
+    mapping(uint256 => bytes32[]) public windowBranches; // index to easily get all branch hashes for a window
     
     uint256 public genesis_window_timestamp; // 00:00:00 UTC on the day the contract was mined
-    bytes32 public genesis_branch_hash=NULL_HASH;
-    
+    bytes32 public genesisBranchHash=NULL_HASH;
 
     constructor()
     public {
-        genesis_window_timestamp = now - (now % 86400);
-        bytes32 genesis_merkle_root = keccak256("I leave to several futures (not to all) my garden of forking paths");
-        genesis_branch_hash = keccak256(abi.encodePacked(NULL_HASH, genesis_merkle_root, NULL_ADDRESS));
+        genesis_window_timestamp = now - (now % WINDOWTIMESPAN);
+        bytes32 genesisMerkleRoot = keccak256("I leave to several futures (not to all) my garden of forking paths");
+        genesisBranchHash = keccak256(abi.encodePacked(NULL_HASH, genesisMerkleRoot, NULL_ADDRESS));
 
-        branchParentHash[genesis_branch_hash] = NULL_HASH;
-        branchArbitratorsID[genesis_branch_hash] = NULL_HASH;
-        branchTimestamp[genesis_branch_hash] = now;
-        branchWindow[genesis_branch_hash] = 0;
-        window_branches[0].push(genesis_branch_hash);
+        branchParentHash[genesisBranchHash] = NULL_HASH;
+        branchArbitratorsID[genesisBranchHash] = NULL_HASH;
+        branchTimestamp[genesisBranchHash] = now;
+        branchWindow[genesisBranchHash] = 0;
+        windowBranches[0].push(genesisBranchHash);
     }
 
-    function createBranch(bytes32 parent_branch_hash, bytes32 whitelist_id)
+    function createBranch(bytes32 parentBranchHash, bytes32 whitelist_id)
     public returns (bytes32) {
 
-        bytes32 branch_hash = keccak256(abi.encodePacked(parent_branch_hash, whitelist_id));
-        require(branch_hash != NULL_HASH);
+        bytes32 branchHash = keccak256(abi.encodePacked(parentBranchHash, whitelist_id));
+        require(branchHash != NULL_HASH);
 
         // Your branch must not yet exist, the parent branch must exist.
         // Check existence by timestamp, all branches have one.
-        require(branchTimestamp[branch_hash] == 0);
-        require(branchTimestamp[parent_branch_hash] > 0);
+        require(branchTimestamp[branchHash] == 0);
+        require(branchTimestamp[parentBranchHash] > 0);
 
         // The window should be the window after the previous branch.
         // You can come back and add a window after it has passed.
         // However, usually you wouldn't want to do this as it would throw away a lot of history.
-        uint256 window = branchWindow[parent_branch_hash] + 1;
+        uint256 window = branchWindow[parentBranchHash] + 1;
+        require(window <= (now - genesis_window_timestamp) / WINDOWTIMESPAN);
 
-        branchParentHash[branch_hash] = parent_branch_hash;
-        branchArbitratorsID[branch_hash] = whitelist_id;
-        branchTimestamp[branch_hash] = now;
-        branchWindow[branch_hash] = window;
-        window_branches[window].push(branch_hash);
+        branchParentHash[branchHash] = parentBranchHash;
+        branchArbitratorsID[branchHash] = whitelist_id;
+        branchTimestamp[branchHash] = now;
+        branchWindow[branchHash] = window;
+        windowBranches[window].push(branchHash);
 
-        emit BranchCreated(branch_hash, whitelist_id);
-        return branch_hash;
+        emit BranchCreated(branchHash, whitelist_id);
+        return branchHash;
     }
+
     function createArbitratorWhitelist(address[] arbitrators)
-    public {
+    public returns (bytes32) {
         // generate unique id;
         bytes32 prev_hash = keccak256(abi.encodePacked(arbitrators[0]));
-        for(uint i=1;i<arbitrators.length;i++){
+        for (uint i=1; i < arbitrators.length; i++) {
             prev_hash = keccak256(abi.encodePacked(prev_hash, arbitrators[i]));
         }
         //set abirtrator address as true    
-        for( i=0;i<arbitrators.length;i++){
+        for (i = 0; i < arbitrators.length; i++) {
             arbitratorWhitelists[prev_hash][arbitrators[i]] = true;
         }
+        return prev_hash;
     }
 
     function isArbitratorWhitelisted(address arb, bytes32 branch) 
@@ -83,16 +87,16 @@ contract ForkonomicSystem{
  
     function getWindowBranches(uint256 window)
     public constant returns (bytes32[]) {
-        return window_branches[window];
+        return windowBranches[window];
     }
 
     function getParentHash(bytes32 hash)
-    public constant returns (bytes32){
+    public constant returns (bytes32) {
         return branchParentHash[hash];
     }
 
     function getTimestampOfBranch(bytes32 hash)
-    public constant returns (uint256){
+    public constant returns (uint256) {
         return branchTimestamp[hash];
     }
 
@@ -107,7 +111,7 @@ contract ForkonomicSystem{
         while (iterationHash != fartherToRootHash) {
             if (investigationHash == iterationHash) {
                 return true;
-            } else{
+            } else {
                 iterationHash = branchParentHash[iterationHash];
             }
         }
@@ -121,9 +125,9 @@ contract ForkonomicSystem{
 
     function isFatherOfBranch(bytes32 father, bytes32 son)
     public constant returns (bool) {
-        while(son!= father){
+        while (son != father) {
             son = branchParentHash[son];
-            if(son == genesis_branch_hash)
+            if (son == genesisBranchHash)
                 return false;
         }
         return true;

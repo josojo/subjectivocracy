@@ -10,7 +10,8 @@ const feeForRealityToken = 1000000000000000000
 module.exports = function(deployer, network, accounts) {
     deployer.deploy(ForkonomicSystem)
     .then(()=> deployer.deploy(Distribution))
-    .then(()=> deployer.deploy(ForkonomicToken, ForkonomicSystem.address, [accounts[1], accounts[2], accounts[3], Distribution.address]))
     .then(()=> deployer.deploy(RealityCheck))
-    .then(()=> deployer.deploy(ForkonomicETF, RealityCheck.address, ForkonomicSystem.address))
+    .then(()=> deployer.deploy(ForkonomicToken, ForkonomicSystem.address, [accounts[1], accounts[2], accounts[3], Distribution.address]))
+    .then(()=> {
+    	deployer.deploy(ForkonomicETF, RealityCheck.address, ForkonomicSystem.address)})
 }
