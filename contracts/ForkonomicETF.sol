@@ -27,8 +27,6 @@ contract ForkonomicETF is ForkonomicToken {
 
     // branch => token => change
     mapping(bytes32=>int) public fETFbalanceChange; 
-
-    uint256 public genesis_window_timestamp; // 00:00:00 UTC on the day the contract was mined
     
     uint256 public template_id=5;
     uint256 public minBond = 50000000000000000;
@@ -48,7 +46,7 @@ contract ForkonomicETF is ForkonomicToken {
     }
 
     // @dev This function takes a investment proposal and makes a question
-    // in realityCheck to arbitrat about this investment request.
+    // in realityCheck to arbitrate about this investment request.
     function proposeInvestment(bytes32 branch, address forkonomicToken, int balanceChange, int compensation, address arbitrator) 
     public payable {
         // check request for logic
@@ -66,8 +64,8 @@ contract ForkonomicETF is ForkonomicToken {
         //posting question
         opening_ts = uint32(now + 30 days);
         bytes32 deal = keccak256(abi.encodePacked(branch, forkonomicToken, balanceChange, compensation, msg.sender));
-        string memory question = string(abi.encodePacked("Should the FETF take the deal:", bytes32ToString(bytes32(deal)), "?"));
-        //bytes32 content_hash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
+        string memory question = string(abi.encodePacked("From all offers for the fETF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
+        //bytes32 contentHash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
         realityCheck.askQuestion.value(5*1000000000000)(0, question, arbitrator, minTimeout, opening_ts, 0);
         emit NewDealProposed(branch, forkonomicToken, balanceChange, compensation, msg.sender);
     }
@@ -85,9 +83,9 @@ contract ForkonomicETF is ForkonomicToken {
         // get answer from relaityCheck
         opening_ts = uint32(now+30 days);
         bytes32 deal = keccak256(abi.encodePacked(originalbranch, forkonomicToken, balanceChange_, compensation, msg.sender));
-        string memory question = string(abi.encodePacked("Should the FETF take the deal:", bytes32ToString(bytes32(deal)), "?"));
-        bytes32 content_hash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
-        uint ans = uint(realityCheck.getFinalAnswerIfMatches(questionId, content_hash, arbitrator, minTimeout, opening_ts));
+        string memory question = string(abi.encodePacked("From all offers for the fETF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
+        bytes32 contentHash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
+        uint ans = uint(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, opening_ts));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
         require(fSystem.branchTimestamp(executionbranch) >= minTimeout+fSystem.WINDOWTIMESPAN());
         
