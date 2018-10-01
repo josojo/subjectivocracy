@@ -11,7 +11,6 @@ module.exports = function(deployer, network, accounts) {
     deployer.deploy(ForkonomicSystem)
     .then(()=> deployer.deploy(Distribution))
     .then(()=> deployer.deploy(RealityCheck))
-    .then(()=> deployer.deploy(ForkonomicToken, ForkonomicSystem.address, [accounts[1], accounts[2], accounts[3], Distribution.address]))
-    .then(()=> {
-    	deployer.deploy(ForkonomicETF, RealityCheck.address, ForkonomicSystem.address)})
+    .then(()=> deployer.deploy(ForkonomicToken, ForkonomicSystem.address, [accounts[0], accounts[1], accounts[2], Distribution.address]))
+    .then(()=> deployer.deploy(ForkonomicETF, RealityCheck.address, ForkonomicSystem.address, []))
 }

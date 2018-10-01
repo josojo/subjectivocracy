@@ -30,6 +30,7 @@ contract ForkonomicToken {
     // Spends, which may cause debits, can only go forwards.
     // That way when we check if you have enough to spend we only have to go backwards.
     mapping(bytes32 => uint256) public lastDebitWindows; // index of last user debits to stop you going backwards
+    mapping(address => bytes32[]) public lastDebitBranches; // index of last user debits to stop you going backwards
 
     // allowances, as we have them in the ERC20 protocol 
     mapping(address => mapping(address => mapping(bytes32=> uint256))) allowed;
@@ -43,14 +44,14 @@ contract ForkonomicToken {
     public {
 
         fSystem = _fSystem;
-        bytes32 genesisMerkleRoot = keccak256("I leave to several futures (not to all) my garden of forking paths");
-        bytes32 genesisBranchHash = keccak256(abi.encodePacked(NULL_HASH, genesisMerkleRoot, NULL_ADDRESS));
-        uint256 num_funded = initalFundingContracts.length;
+        bytes32 genesisBranchHash = fSystem.genesisBranchHash();
+        uint256 numFunded = initalFundingContracts.length;
 
-        require(num_funded < 11);
+        require(numFunded < 11);
 
-        for (uint256 i=0; i < num_funded; i++) {
-            balanceChange[genesisBranchHash][keccak256(abi.encodePacked(initalFundingContracts[i], NULL_HASH))] = 210000000000000;
+        for (uint256 i=0; i < numFunded; i++) {
+            bytes32 account = keccak256(abi.encodePacked(initalFundingContracts[i], NULL_HASH));
+            balanceChange[genesisBranchHash][account] += 210000000000000;
             totalSupply += 210000000000000;
         }
     }
@@ -103,14 +104,12 @@ contract ForkonomicToken {
 
         require(amount <= 2100000000000000);
         require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
+        bytes32 account =keccak256(abi.encodePacked(msg.sender, fromBox));
+        require(branchWindow >= lastDebitWindows[account]);  // debits can't go backwards
+        require(_isAmountSpendable((account), amount, branch));  // can only spend what you have
 
-        if (branchWindow < lastDebitWindows[keccak256(abi.encodePacked(msg.sender, fromBox))])
-            return false; // debits can't go backwards
-        if (!_isAmountSpendable(keccak256(abi.encodePacked(msg.sender, fromBox)), amount, branch)) 
-            return false; // can only spend what you have
-
-        lastDebitWindows[keccak256(abi.encodePacked(msg.sender, fromBox))] = branchWindow;
-        balanceChange[branch][keccak256(abi.encodePacked(msg.sender, fromBox))] -= int256(amount);
+        lastDebitWindows[account] = branchWindow;
+        balanceChange[branch][account] -= int256(amount);
         balanceChange[branch][keccak256(abi.encodePacked(addr, toBox))] += int256(amount);
 
         emit Transfer(msg.sender, addr, fromBox, toBox, amount, branch);
@@ -123,7 +122,8 @@ contract ForkonomicToken {
         return boxTransferFrom(from, addr, amount, branch, NULL_HASH, NULL_HASH);
     }
 
-    function boxTransferFrom(address fromAddr, address toAddr, uint256 amount, bytes32 branch, bytes32 fromBox, bytes32 toBox)
+    function boxTransferFrom(address fromAddr, address toAddr, uint256 amount,
+        bytes32 branch, bytes32 fromBox, bytes32 toBox)
     public returns (bool) {
 
         require(allowed[fromAddr][msg.sender][branch] >= amount);
@@ -132,14 +132,12 @@ contract ForkonomicToken {
 
         require(amount <= 2100000000000000);
         require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
+        bytes32 account =keccak256(abi.encodePacked(fromAddr, fromBox));
+        require(branchWindow >= lastDebitWindows[account]);  // debits can't go backwards
+        require(_isAmountSpendable((account), amount, branch));  // can only spend what you have
 
-        if (branchWindow < lastDebitWindows[keccak256(abi.encodePacked(fromAddr, NULL_HASH))])
-            return false; // debits can't go backwards
-        if (!_isAmountSpendable(keccak256(abi.encodePacked(fromAddr, fromBox)), amount, branch))
-            return false; // can only spend what you have
-
-        lastDebitWindows[keccak256(abi.encodePacked(fromAddr, NULL_HASH))] = branchWindow;
-        balanceChange[branch][keccak256(abi.encodePacked(fromAddr, fromBox))] -= int256(amount);
+        lastDebitWindows[account] = branchWindow;
+        balanceChange[branch][account] -= int256(amount);
         balanceChange[branch][keccak256(abi.encodePacked(toAddr, toBox))] += int256(amount);
 
         uint256 allowedBefore = allowed[fromAddr][msg.sender][branch];
@@ -176,7 +174,8 @@ contract ForkonomicToken {
     }
 
     // check the sum of all withdrawals
-    function recordedBoxWithdrawalAmount(address owner, bytes32 box, bytes32 branchHash, bytes32 earliestPossibleBranch) 
+    function recordedBoxWithdrawalAmount(address owner, bytes32 box,
+        bytes32 branchHash, bytes32 earliestPossibleBranch) 
     public view returns (uint256) {
         bytes32 id = keccak256(abi.encodePacked(owner, box));
         int256 bal = 0;
@@ -205,4 +204,5 @@ contract ForkonomicToken {
         }
         return false;
     }
+
 }

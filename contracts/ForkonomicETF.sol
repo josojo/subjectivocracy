@@ -1,9 +1,8 @@
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.22;
 
 import "./ForkonomicToken.sol";
-import "./RealityCheck.sol";
+import "@realitio/realitio-contracts/truffle/contracts/RealityCheck.sol";
 import "./ForkonomicSystem.sol";
-import "./ForkonomicToken.sol";
 
 
 contract ForkonomicETF is ForkonomicToken {
@@ -22,31 +21,30 @@ contract ForkonomicETF is ForkonomicToken {
 
     //interfaces
     RealityCheck public realityCheck;
-    ForkonomicSystem public fSystem;
 
     // branch => token => change
-    mapping(bytes32=>mapping(address=>int)) public fund_holdings_changes; 
+    mapping(bytes32=>mapping(address=>int)) public fundHoldingChange; 
 
     // branch => token => change
     mapping(bytes32=>int) public fETFbalanceChange; 
 
     uint256 public genesis_window_timestamp; // 00:00:00 UTC on the day the contract was mined
-    bytes32 public genesisBranchHash;
     
-    uint256 public template_id=0;
+    uint256 public template_id=5;
     uint256 public minBond = 50000000000000000;
     uint32 public minTimeout= 1 days;
     uint32 public opening_ts;
     uint256 public minQuestionFunding =50000000000000000; // minimul payment for a funding request is 0.05 ETH. This is used in realitycheck
     bytes32 constant Proposal_HASH = "214"; // hash for identifying the deposited funds
 
-    constructor(RealityCheck realityCheck_, ForkonomicSystem fSystem_)
+    constructor(
+        RealityCheck realityCheck_, 
+        ForkonomicSystem fSystem_,
+        address [] funding
+    )
+    ForkonomicToken(fSystem_, funding) 
     public {
-        fSystem = fSystem_;
         realityCheck = realityCheck_;
-        genesis_window_timestamp = now - (now % 86400);
-        bytes32 genesisMerkleRoot = keccak256("I leave to several futures (not to all) my garden of forking paths");
-        genesisBranchHash = keccak256(abi.encodePacked(NULL_HASH, genesisMerkleRoot, NULL_ADDRESS));
     }
 
     // @dev This function takes a investment proposal and makes a question
@@ -130,7 +128,7 @@ contract ForkonomicETF is ForkonomicToken {
         //calculate the total amount of outstanding ForkonomicETF-tokens
         int256 amountOutstandingETFToken = 0;
         bytes32 hashIteration = branch;
-        while (hashIteration != genesisBranchHash) {
+        while (hashIteration != fSystem.genesisBranchHash()) {
             amountOutstandingETFToken += fETFbalanceChange[hashIteration];
             hashIteration = fSystem.getParentHash(hashIteration);
         }

@@ -18,9 +18,9 @@ The Forkonomics framework is a protocol for attaching value transfers to a parti
 The goverance in forkonomics always follows the same pattern. Usually the arbitration or governmental decision are made by preselected arbitrators. This is very efficient, as these arbitrators do quick decision and they will be bonded to make valuable decisions. 
 In case the community is not okay with an arbitrators decision, there will be a much slower and involving decision process. The process of forking the system and deselcting bad arbitrators.  
 
-Using this principle, any escalated contention about a correct decision of an arbitrator will be resolved in a very democratic manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch.
+Using this principle, any escalated contention about a correct decision of an arbitrator will be resolved in a very democratic manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch. Minority branches will never be stopped, these communities can live on.
 
-The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol. The bundled value of these tokens represented by a fund token will serve a currency to safely transfer value conditional to a bundle of facts.
+The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol. The bundled value of these tokens represented by a exchange traded token fund will serve a currency to safely transfer value conditional to a bundle of facts.
 
 # Introduction
 
@@ -37,7 +37,7 @@ One fundamental building block of a subjectivocracy system is that there needs t
 1. it can easily be forked into the different branches.
 2. the token needs to a proper value proposition, as users expect the token to keep a steady value
 
-The first point is essential for the workings of the system. The second one is important as users of the ecosystem should be very comfortable holding the token used for any interactions. This underlying collateral token should have the volatility risks spread out well and should have a good value proposition. Using an Exchange-Traded-Fund(ETF) of tokens, which support the forkonomic protocol, as the collateral token is a good choice, as ETFs are known as tool for spreading risk and have a very good value proposition.
+The first point is essential for the workings of the system. The second one is important as users of the ecosystem should be very comfortable holding the token used for any interactions. This underlying collateral token should have the volatility risks spread out well and should have a good value proposition. This proposal will make use of the concept of economic abstraction to give the underlying tokens value. An Exchange-Traded-Token-Fund(ETTF) of tokens, which support the forkonomic protocol, will bundle together the value propostions of many projects. 
 
 ## Key Building Blocks
 
@@ -121,8 +121,6 @@ We can imagine a wide spread of application of this forkonomics system. Here, we
 7. Tokenization of Events
 8. Bonding platform for arbitrators: Arbitrators will only be able to withdraw their bond in the future, if they are still arbitrator on this branch. This will incentive arbitrators to act honestly.
 9. ...
-
-
 
 ### Governance in Forknomonics
 

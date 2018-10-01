@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
 
 import "./ForkonomicToken.sol";
-import "./RealityCheck.sol";
+import "@realitio/realitio-contracts/truffle/contracts/RealityCheck.sol";
 
 
 contract Distribution {
@@ -15,6 +15,8 @@ contract Distribution {
     ForkonomicSystem public fSystem;
    
     event Withdraw(bytes32 hashid, address user);
+    event LogAddress(address a);
+    event LogBytes(bytes32 b);
 
     modifier isOwner() {
         require (msg.sender == owner, "sender not owner");
@@ -26,7 +28,7 @@ contract Distribution {
         _;
     }
 
-    uint256 public templateId=5;
+    uint256 public templateId=0;
     uint256 public minBond;
     uint32 public minTimeout;
     uint32 public openingTs;
@@ -69,11 +71,11 @@ contract Distribution {
     }
 
     function askRealityCheck(address arbitrator) public payable returns (bytes32) {
-        openingTs = uint32(now+30 days);
+        openingTs = uint32(now+7 days);
         minTimeout = 1000;
         realityCheckQuestion = string(abi.encodePacked("Which contract should be able to withdraw funds from ", this, "?"));
-        contentHash = keccak256(abi.encodePacked(templateId, openingTs, realityCheckQuestion)); 
-        return realityCheck.askQuestion(0, realityCheckQuestion, arbitrator, minTimeout, openingTs, 0);
+        contentHash = keccak256(templateId, openingTs, realityCheckQuestion); 
+        return realityCheck.askQuestion(templateId, realityCheckQuestion, arbitrator, minTimeout, openingTs, 0);
     }
 
      // param hashid_ hashid_ should be the hash of the branch 
@@ -84,12 +86,12 @@ contract Distribution {
     }
   
     // param branch branch should be the hash of the branch for receiving the money
-    function delayedDistributionLeftOverTokens(bytes32 branch, bytes32 questionId, address arbitrator, address fundsReceiver)
+    function delayedDistributionLeftOverTokens(bytes32 branch, bytes32 questionId, address arbitrator)
     public {
       // ensure that arbitrator is white-listed
         require(fSystem.isArbitratorWhitelisted(arbitrator, branch));
         // ensure that fundsReceiver is the right party and that the question_ID fits
-        require(fundsReceiver == address(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond)));
+        address fundsReceiver = address(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
         require(fSystem.branchTimestamp(branch) >= minTimeout+fSystem.WINDOWTIMESPAN());
         // send acutal funds to another distribution contract

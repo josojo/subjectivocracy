@@ -34,7 +34,7 @@ contract ForkonomicSystem {
 
         branchParentHash[genesisBranchHash] = NULL_HASH;
         branchArbitratorsID[genesisBranchHash] = NULL_HASH;
-        branchTimestamp[genesisBranchHash] = now;
+        branchTimestamp[genesisBranchHash] = now - (now % WINDOWTIMESPAN);
         branchWindow[genesisBranchHash] = 0;
         windowBranches[0].push(genesisBranchHash);
     }
@@ -49,16 +49,16 @@ contract ForkonomicSystem {
         // Check existence by timestamp, all branches have one.
         require(branchTimestamp[branchHash] == 0);
         require(branchTimestamp[parentBranchHash] > 0);
+        require(now - (now % WINDOWTIMESPAN) >= branchTimestamp[parentBranchHash] + WINDOWTIMESPAN);
 
         // The window should be the window after the previous branch.
         // You can come back and add a window after it has passed.
         // However, usually you wouldn't want to do this as it would throw away a lot of history.
         uint256 window = branchWindow[parentBranchHash] + 1;
-        require(window <= (now - genesis_window_timestamp) / WINDOWTIMESPAN);
 
         branchParentHash[branchHash] = parentBranchHash;
         branchArbitratorsID[branchHash] = whitelist_id;
-        branchTimestamp[branchHash] = now;
+        branchTimestamp[branchHash] = now - (now % WINDOWTIMESPAN);
         branchWindow[branchHash] = window;
         windowBranches[window].push(branchHash);
 
