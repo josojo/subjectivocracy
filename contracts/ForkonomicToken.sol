@@ -1,14 +1,16 @@
 pragma solidity ^0.4.22;
 import "./ForkonomicSystem.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 
 contract ForkonomicToken {
+    using SafeMath for uint256;
 
-
-    event Approval(address indexed _owner, address indexed _spender, uint _value, bytes32 branch);
+    event Approval(address indexed _owner, bytes32 ownerBox, address indexed _spender,
+        bytes32 spenderBox, uint _value, bytes32 branch);
 
     event Transfer(address indexed from,
-        address indexed to,
+        address to,
         bytes32 fromBox,
         bytes32 toBox,
         uint value,
@@ -19,7 +21,6 @@ contract ForkonomicToken {
     uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
     
     bytes32 constant NULL_HASH = "";
-    address constant NULL_ADDRESS = 0x0;
 
     // users balance changes are stored in the following mapping
     mapping(bytes32 => mapping(bytes32 => int256)) balanceChange; // user-account debits and credits
@@ -30,10 +31,9 @@ contract ForkonomicToken {
     // Spends, which may cause debits, can only go forwards.
     // That way when we check if you have enough to spend we only have to go backwards.
     mapping(bytes32 => uint256) public lastDebitWindows; // index of last user debits to stop you going backwards
-    mapping(address => bytes32[]) public lastDebitBranches; // index of last user debits to stop you going backwards
 
     // allowances, as we have them in the ERC20 protocol 
-    mapping(address => mapping(address => mapping(bytes32=> uint256))) allowed;
+    mapping(bytes32 => mapping(bytes32 => mapping(bytes32=> uint256))) public allowed;
 
     uint256 public totalSupply;
 
@@ -58,14 +58,29 @@ contract ForkonomicToken {
 
     function approve(address _spender, uint256 _amount, bytes32 _branch)
     public returns (bool success) {
-        allowed[msg.sender][_spender][_branch] = _amount;
-        emit Approval(msg.sender, _spender, _amount, _branch);
-        return true;
+        return approveBox(_spender, _amount, _branch, NULL_HASH, NULL_HASH);
     }
 
     function allowance(address owner, address spender, bytes32 branch)
     public constant returns (uint remaining) {
-        return allowed[owner][spender][branch];
+        return allowanceBox(owner, spender, branch, NULL_HASH, NULL_HASH);
+    }
+
+    function approveBox(address _spender, uint256 _amount, bytes32 _branch, bytes32 senderBox, bytes32 receiverBox)
+    public returns (bool success) {
+        bytes32 boxSpender = keccak256(abi.encodePacked(_spender, senderBox));
+        bytes32 boxFrom = keccak256(abi.encodePacked(msg.sender, receiverBox));
+        allowed[boxFrom][boxSpender][_branch] = _amount;
+        emit Approval(msg.sender, receiverBox, _spender, senderBox, _amount, _branch);
+        return true;
+    }
+
+    function allowanceBox(address owner, address spender, bytes32 branch, bytes32 senderBox, bytes32 receiverBox)
+    public constant returns (uint remaining) {
+
+        bytes32 spenderAccount = keccak256(abi.encodePacked(spender, senderBox));
+        bytes32 ownerAccount = keccak256(abi.encodePacked(owner, receiverBox));
+        return allowed[ownerAccount][spenderAccount][branch];
     }
 
     function balanceOf(address addr, bytes32 branch)
@@ -112,37 +127,37 @@ contract ForkonomicToken {
         balanceChange[branch][account] -= int256(amount);
         balanceChange[branch][keccak256(abi.encodePacked(addr, toBox))] += int256(amount);
 
-        emit Transfer(msg.sender, addr, fromBox, toBox, amount, branch);
+        emit Transfer(addr, msg.sender, fromBox, toBox, amount, branch);
 
         return true;
     }
 
-    function transferFrom(address from, address addr, uint256 amount, bytes32 branch)
+    function transferFrom(address from, address to, uint256 amount, bytes32 branch)
     public returns (bool) {
-        return boxTransferFrom(from, addr, amount, branch, NULL_HASH, NULL_HASH);
+        return boxTransferFrom(from, to, amount, branch, NULL_HASH, NULL_HASH);
     }
 
     function boxTransferFrom(address fromAddr, address toAddr, uint256 amount,
         bytes32 branch, bytes32 fromBox, bytes32 toBox)
     public returns (bool) {
 
-        require(allowed[fromAddr][msg.sender][branch] >= amount);
+        bytes32 boxFrom =keccak256(abi.encodePacked(fromAddr, fromBox));
+        bytes32 boxTo = keccak256(abi.encodePacked(toAddr, toBox));
+        bytes32 boxSender = keccak256(abi.encodePacked(msg.sender, toBox));
+        require(allowed[boxFrom][boxSender][branch] >= amount);
 
         uint256 branchWindow = fSystem.getWindowOfBranch(branch);
 
         require(amount <= 2100000000000000);
         require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
-        bytes32 account =keccak256(abi.encodePacked(fromAddr, fromBox));
-        require(branchWindow >= lastDebitWindows[account]);  // debits can't go backwards
-        require(_isAmountSpendable((account), amount, branch));  // can only spend what you have
+        require(branchWindow >= lastDebitWindows[boxFrom]);  // debits can't go backwards
+        require(_isAmountSpendable((boxFrom), amount, branch));  // can only spend what you have
 
-        lastDebitWindows[account] = branchWindow;
-        balanceChange[branch][account] -= int256(amount);
-        balanceChange[branch][keccak256(abi.encodePacked(toAddr, toBox))] += int256(amount);
+        lastDebitWindows[boxFrom] = branchWindow;
+        balanceChange[branch][boxFrom] -= int256(amount);
+        balanceChange[branch][boxTo] += int256(amount);
 
-        uint256 allowedBefore = allowed[fromAddr][msg.sender][branch];
-        uint256 allowedAfter = allowedBefore - amount;
-        assert(allowedBefore > allowedAfter);
+        allowed[boxFrom][boxSender][branch] = allowed[boxFrom][boxSender][branch].sub(amount);
 
         emit Transfer(fromAddr, toAddr, NULL_HASH, NULL_HASH, amount, branch);
 
@@ -155,9 +170,10 @@ contract ForkonomicToken {
     }
 
     // record any withdrawal on a certain branch 
-    function recordBoxWithdrawal(bytes32 box, uint256 amount, bytes32 branch) public {
+    function recordBoxWithdrawal(bytes32 box, uint256 amount, bytes32 branch) public returns (bool) {
         require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
         withdrawalRecord[branch][keccak256(abi.encodePacked(msg.sender, box))] += int256(amount);
+        return true;
     }
 
     // check whether a withdrawal has already happend

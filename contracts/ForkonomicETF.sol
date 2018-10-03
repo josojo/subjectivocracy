@@ -5,7 +5,7 @@ import "@realitio/realitio-contracts/truffle/contracts/RealityCheck.sol";
 import "./ForkonomicSystem.sol";
 
 
-contract ForkonomicETF is ForkonomicToken {
+contract ForkonomicETTF is ForkonomicToken {
     //events
     event NewDealProposed(
         bytes32 branch,
@@ -15,8 +15,8 @@ contract ForkonomicETF is ForkonomicToken {
         address sender);
 
     //constant variables
-    string public constant name = "ForkonomicsETF";
-    string public constant symbol = "FETF";
+    string public constant name = "ForkonomicsETTF";
+    string public constant symbol = "FETTF";
     uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
 
     //interfaces
@@ -26,14 +26,16 @@ contract ForkonomicETF is ForkonomicToken {
     mapping(bytes32=>mapping(address=>int)) public fundHoldingChange; 
 
     // branch => token => change
-    mapping(bytes32=>int) public fETFbalanceChange; 
+    mapping(bytes32=>int) public fETTFbalanceChange; 
     
     uint256 public template_id=5;
     uint256 public minBond = 50000000000000000;
     uint32 public minTimeout= 1 days;
     uint32 public opening_ts;
-    uint256 public minQuestionFunding =50000000000000000; // minimul payment for a funding request is 0.05 ETH. This is used in realitycheck
-    bytes32 constant Proposal_HASH = "214"; // hash for identifying the deposited funds
+    uint256 public minQuestionFunding =5000000000000000;
+    
+     // minimul payment for a funding request is 0.05 ETH. This is used in realitycheck
+    bytes32 public Proposal_HASH = "214"; // hash for identifying the deposited funds
 
     constructor(
         RealityCheck realityCheck_, 
@@ -51,7 +53,7 @@ contract ForkonomicETF is ForkonomicToken {
     public payable {
         // check request for logic
         if (balanceChange > 0) {
-            require(compensation < 0);
+            //require(compensation < 0);
             require(ForkonomicToken(forkonomicToken).boxTransferFrom(msg.sender, this, uint(balanceChange), branch, NULL_HASH, Proposal_HASH));
         } else {
             require(compensation > 0);
@@ -64,7 +66,7 @@ contract ForkonomicETF is ForkonomicToken {
         //posting question
         opening_ts = uint32(now + 30 days);
         bytes32 deal = keccak256(abi.encodePacked(branch, forkonomicToken, balanceChange, compensation, msg.sender));
-        string memory question = string(abi.encodePacked("From all offers for the fETF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
+        string memory question = string(abi.encodePacked("From all offers for the fETTF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
         //bytes32 contentHash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
         realityCheck.askQuestion.value(5*1000000000000)(0, question, arbitrator, minTimeout, opening_ts, 0);
         emit NewDealProposed(branch, forkonomicToken, balanceChange, compensation, msg.sender);
@@ -83,7 +85,7 @@ contract ForkonomicETF is ForkonomicToken {
         // get answer from relaityCheck
         opening_ts = uint32(now+30 days);
         bytes32 deal = keccak256(abi.encodePacked(originalbranch, forkonomicToken, balanceChange_, compensation, msg.sender));
-        string memory question = string(abi.encodePacked("From all offers for the fETF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
+        string memory question = string(abi.encodePacked("From all offers for the fETTF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
         bytes32 contentHash = keccak256(abi.encodePacked(template_id, opening_ts, question));     
         uint ans = uint(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, opening_ts));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
@@ -103,17 +105,17 @@ contract ForkonomicETF is ForkonomicToken {
             }
         } else {
             //if request has been accepted
-            // credit new fETF-tokens
+            // credit new fETTF-tokens
             if (balanceChange_ > 0){
                 require(!hasBoxWithdrawal(msg.sender, NULL_HASH, executionbranch, originalbranch)); 
                 balanceChange[executionbranch][keccak256(abi.encodePacked(msg.sender, NULL_HASH))] += compensation;
-                fETFbalanceChange[executionbranch] += compensation;
+                fETTFbalanceChange[executionbranch] += compensation;
                 recordBoxWithdrawal(NULL_HASH, uint(compensation), executionbranch);
             } else {
-                //send out the tokens to requestStarter, burn credited fETF-tokens
+                //send out the tokens to requestStarter, burn credited fETTF-tokens
                 require(!ForkonomicToken(forkonomicToken).hasBoxWithdrawal(msg.sender, NULL_HASH, executionbranch, originalbranch));
                 require(ForkonomicToken(forkonomicToken).transfer(msg.sender, uint(balanceChange_), executionbranch));
-                fETFbalanceChange[executionbranch] += compensation;
+                fETTFbalanceChange[executionbranch] += compensation;
                 ForkonomicToken(forkonomicToken).recordBoxWithdrawal(NULL_HASH, uint(balanceChange_), executionbranch);
             }
         }
@@ -123,11 +125,11 @@ contract ForkonomicETF is ForkonomicToken {
         // transfer tokens, which are about to be redeemed
         require(transferFrom(msg.sender, this, amount, branch));
 
-        //calculate the total amount of outstanding ForkonomicETF-tokens
-        int256 amountOutstandingETFToken = 0;
+        //calculate the total amount of outstanding ForkonomicETTF-tokens
+        int256 amountOutstandingETTFToken = 0;
         bytes32 hashIteration = branch;
         while (hashIteration != fSystem.genesisBranchHash()) {
-            amountOutstandingETFToken += fETFbalanceChange[hashIteration];
+            amountOutstandingETTFToken += fETTFbalanceChange[hashIteration];
             hashIteration = fSystem.getParentHash(hashIteration);
         }
 
@@ -135,7 +137,7 @@ contract ForkonomicETF is ForkonomicToken {
         for (uint i=0; i < forkonomicTokens.length; i++) {
             uint256 holdings = ForkonomicToken(forkonomicTokens[i]).balanceOf(this, branch);
             //make safe mul
-            require(ForkonomicToken(forkonomicTokens[i]).transfer(msg.sender, amount * holdings / uint(amountOutstandingETFToken), branch));
+            require(ForkonomicToken(forkonomicTokens[i]).transfer(msg.sender, amount * holdings / uint(amountOutstandingETTFToken), branch));
         }
 
     }

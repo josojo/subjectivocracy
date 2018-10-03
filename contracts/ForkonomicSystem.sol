@@ -5,10 +5,8 @@ contract ForkonomicSystem {
 
     event BranchCreated(bytes32 hash, bytes32 whiteList_id);
 
-    bytes32 constant NULL_HASH = "";
-    address constant NULL_ADDRESS = 0x0;
+    bytes32 public NULL_HASH = "";
     uint256 public WINDOWTIMESPAN = 86400; 
-
 
     // index_arbitrators => arbitrator => isSelected
     mapping(bytes32=>mapping(address=>bool)) public arbitratorWhitelists;
@@ -30,7 +28,7 @@ contract ForkonomicSystem {
     public {
         genesis_window_timestamp = now - (now % WINDOWTIMESPAN);
         bytes32 genesisMerkleRoot = keccak256("I leave to several futures (not to all) my garden of forking paths");
-        genesisBranchHash = keccak256(abi.encodePacked(NULL_HASH, genesisMerkleRoot, NULL_ADDRESS));
+        genesisBranchHash = keccak256(abi.encodePacked(genesisMerkleRoot, NULL_HASH));
 
         branchParentHash[genesisBranchHash] = NULL_HASH;
         branchArbitratorsID[genesisBranchHash] = NULL_HASH;
@@ -119,8 +117,8 @@ contract ForkonomicSystem {
     }
 
     function getArbitratorIdentifierOfBranch(bytes32 hash)
-    public constant returns (uint id) {
-        return branchWindow[hash];
+    public constant returns (bytes32 id) {
+        return branchArbitratorsID[hash];
     }
 
     function isFatherOfBranch(bytes32 father, bytes32 son)
