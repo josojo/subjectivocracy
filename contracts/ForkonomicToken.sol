@@ -66,12 +66,12 @@ contract ForkonomicToken {
         return allowanceBox(owner, spender, branch, NULL_HASH, NULL_HASH);
     }
 
-    function approveBox(address _spender, uint256 _amount, bytes32 _branch, bytes32 senderBox, bytes32 receiverBox)
+    function approveBox(address _spender, uint256 _amount, bytes32 _branch, bytes32 fromBox, bytes32 spenderBox)
     public returns (bool success) {
-        bytes32 boxSpender = keccak256(abi.encodePacked(_spender, senderBox));
-        bytes32 boxFrom = keccak256(abi.encodePacked(msg.sender, receiverBox));
+        bytes32 boxSpender = keccak256(abi.encodePacked(_spender, spenderBox));
+        bytes32 boxFrom = keccak256(abi.encodePacked(msg.sender, fromBox));
         allowed[boxFrom][boxSpender][_branch] = _amount;
-        emit Approval(msg.sender, receiverBox, _spender, senderBox, _amount, _branch);
+        emit Approval(msg.sender, fromBox, _spender, spenderBox, _amount, _branch);
         return true;
     }
 
