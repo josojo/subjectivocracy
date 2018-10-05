@@ -21,12 +21,12 @@ contract ForkonomicSystem {
     // window => branches[]
     mapping(uint256 => bytes32[]) public windowBranches; // index to easily get all branch hashes for a window
     
-    uint256 public genesis_window_timestamp; // 00:00:00 UTC on the day the contract was mined
+    uint256 public genesisWindowTimestamp; // 00:00:00 UTC on the day the contract was mined
     bytes32 public genesisBranchHash=NULL_HASH;
 
     constructor()
     public {
-        genesis_window_timestamp = now - (now % WINDOWTIMESPAN);
+        genesisWindowTimestamp = now - (now % WINDOWTIMESPAN);
         bytes32 genesisMerkleRoot = keccak256("I leave to several futures (not to all) my garden of forking paths");
         genesisBranchHash = keccak256(abi.encodePacked(genesisMerkleRoot, NULL_HASH));
 
@@ -83,26 +83,6 @@ contract ForkonomicSystem {
         return arbitratorWhitelists[branchArbitratorsID[branch]][arb];
     }
  
-    function getWindowBranches(uint256 window)
-    public constant returns (bytes32[]) {
-        return windowBranches[window];
-    }
-
-    function getParentHash(bytes32 hash)
-    public constant returns (bytes32) {
-        return branchParentHash[hash];
-    }
-
-    function getTimestampOfBranch(bytes32 hash)
-    public constant returns (uint256) {
-        return branchTimestamp[hash];
-    }
-
-    function getWindowOfBranch(bytes32 hash)
-    public constant returns (uint id) {
-        return branchWindow[hash];
-    }
-   
     function isBranchInBetweenBranches(bytes32 investigationHash, bytes32 closerToRootHash, bytes32 fartherToRootHash)
     public constant returns (bool) {
         bytes32 iterationHash = closerToRootHash;
@@ -116,17 +96,16 @@ contract ForkonomicSystem {
         return false;
     }
 
-    function getArbitratorIdentifierOfBranch(bytes32 hash)
-    public constant returns (bytes32 id) {
-        return branchArbitratorsID[hash];
-    }
-
     function isFatherOfBranch(bytes32 father, bytes32 son)
     public constant returns (bool) {
+
         while (son != father) {
             son = branchParentHash[son];
             if (son == genesisBranchHash)
-                return false;
+                if (father == genesisBranchHash)
+                    return true;
+                else
+                    return false;
         }
         return true;
     }

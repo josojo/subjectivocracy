@@ -16,9 +16,9 @@ Alexander Herrmann
 The Forkonomics framework is a protocol for attaching value transfers to a particular bundle of facts and propositions. The fundamental pillar of this protocol is the principle of forking: Tokens can be forked into different branches. Each branch is associated with a set of arbitrators. Arbitrators represent certain sets of facts and propositions. Smart contracts can read these arbitrators, their facts and the proposition from each branch and act upon these facts.
 
 The goverance in forkonomics always follows the same pattern. Usually the arbitration or governmental decision are made by preselected arbitrators. This is very efficient, as these arbitrators do quick decision and they will be bonded to make valuable decisions. 
-In case the community is not okay with an arbitrators decision, there will be a much slower and involving decision process. The process of forking the system and deselcting bad arbitrators.  
+In case the community finds these arbitrators decision questionable, there will be a much slower and involving decision process. The process of forking the system and deselcting bad arbitrators.  
 
-Using this principle, any escalated contention about a correct decision of an arbitrator will be resolved in a very democratic manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch. Minority branches will never be stopped, these communities can live on.
+Using this principle, any escalated contention about a correct decision of an arbitrator will be resolved in a very liberal manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch. Minority branches will never be stopped, these communities are free to grow up another new economy with different arbitrators.
 
 This subjectivocracy approach is combined with economic abstraction. The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol and govered by the arbitrators of the system. The bundled value of these tokens represented by this exchange traded token fund (ETTF) will serve a currency to safely transfer value conditional to a bundle of facts. 
 
@@ -78,7 +78,7 @@ Dapp building on top of the forkonomic system will be done in such a manner that
 
 ### Forkonomics-ETTF
 
-If there are any successful dapps using the forkonomic-token protocol, then these tokens can be bundled in a forkonomic-Exchange-Traded-Token-Fund (ETTF). Of course, the forkonomic-ETTF would have its own token, tracking the ETTFs value. This token would also follow the forkonomic protocol. Forkonomic tokens would be added according to strict, predefined rules. The decision on whether a token meets these rules would be found with the following process:
+If there are any successful dapps using the forkonomic-token protocol, then these tokens can be bundled in a forkonomic-Exchange-Traded-Token-Fund (ETTF). Of course, the forkonomic-ETTF would have its own token, the FFT (ForkonomicFund Token), tracking the ETTFs value. The FFTw would also follow the forkonomic protocol. Other Forkonomic tokens would be added to the ETTF according to strict, predefined rules. The decision on whether a token meets these rules would be found with the following process:
 1. Anyone can make a proposal to add or remove tokens to the fund
 2. The fund will take the proposal and make a question to realit.io and a current arbitrator, whether this proposal should be accepted.
 3. Realit.io will answer this question
@@ -86,7 +86,7 @@ If there are any successful dapps using the forkonomic-token protocol, then thes
 
 This is a very safe mechanism, as any bad arbitrator decisions can be reverted by the community. The community can simply decide to use the forkonomics-system as back-up to branch off bad arbitrator and thereby prevent any addition of non-valuable tokens.
 
-The Forkonomics-ETTF plays a central role in the Forkonomics ecosystem. The forkonomic system is a platform for value transfers conditional to propositions or arbitrator decisions. As mentioned before, in order to use subjectivocracy all payments need to be performed with a forkable token as collateral. Probably, the Forkonomics-ETTF token is the preferred collateral in the ecosystem, as it backed by relative diverse equity.
+The Forkonomics-ETTF plays a central role in the Forkonomics ecosystem. The forkonomic system is a platform for value transfers conditional to propositions or arbitrator decisions. As mentioned before, in order to use subjectivocracy all payments need to be performed with a forkable token as collateral. *Probably, the FFT token is the preferred collateral in the ecosystem, as it backed by relative diverse equity.*
 
 The forkonomic-ETTF will hold forkonomic-tokens according to some ruleset. Although this rule set will be adapted over time to reflect the growth of the ecosystem, some rules will stay constant:
 
@@ -112,7 +112,7 @@ We can imagine a wide spread of application of this forkonomics system. Here, we
 
 #### Examples:
 
-1. Insurances: Hurricane parametric insurance, Flood parametric insurance, fire insurances, car insurances, employment insurances.
+1. Insurances: Hurricane parametric insurance, Flood parametric insurance, upgrades from part insurance coverage to full insurance coverage, car insurances, employment insurances.
 1.1 A fund which buys well-spread insurance policies with only a fractional covering of the policies involved. The risks should be well of the policies should be so well spread that a fraction coverage is justified, as it currently is in the traditional insurance industry via Basel 3.
 2. Derivative Markets: All kind of markets for trading derivatives in a decentralized fashion can be built. These derivatives could be once tokenized and then later freely be traded on any exchanges, also plasma exchanges
 2.1 Prediction Markets
@@ -130,7 +130,7 @@ We can imagine a wide spread of application of this forkonomics system. Here, we
 2. Advanced functionality: Advanced token issuance governed by arbitrators of the forkonomic system will benefit the investors with more certainties for his investment. This advanced issuance might also be used to fairly distribute the dapp developent by adaption an issuance model as indicated by Realitytokens. Also, special lending agreements of tokens governed by arbitrators of the forkonomic system can be used to receive further funding or do bond offerings.
 3. Higher financial evaluation: If the forkonomic token of a revenue earning dapp is added to the ETTF for the usage of a currency in the system, then many tokens are locked away, which increase the value of the remaining ones.
 
-Additionally, the issued token might be less perceived as a security due to the forking and issuing a token as a forkonomic token helps to build this arbitrator system.    
+Additionally, the issued token might be less perceived as a security due to the forking nature and issuing a token as a forkonomic token helps to build this forkonomics system in general.    
 
 
 ### Governance in Forknomonics
@@ -146,4 +146,4 @@ An example of such a user-friendly system is the subchain solution (cf. subchain
 
 ### Summary:
 
-The forkonomic system provides a novel mechanism for appointing the most important player in a society, the judges. While forking into different realities is not an option in normal life, the new economies of blockchains allow for this ideal process. The new electronically managed ecosystems allow a very harmless protest against non-conformal judges: switching in new realities and wait until these realities get adopted by the rest of the community. This form of protest is so much advanced compared to old times, where you would have to fight for your rights on the street.
+The forkonomic system provides a novel mechanism for appointing the most important player in a society, the judges. While forking into different realities is not an option in normal life, the new economies of blockchains allow for this ideal process. The new electronically managed ecosystems allow a very harmless protest against non-conformal judges: switching in new realities and wait until these realities get adopted by the rest of the community. This form of protest is so much advanced compared to old times, where you would have to fight for your rights on the street and risk your life.

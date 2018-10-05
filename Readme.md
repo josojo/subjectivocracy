@@ -5,10 +5,20 @@ Forkonomics
 Collection of smart contracts for the Forkonomic-ecosystem.
 
 
-Documentation
+Introduction to Forkonomics:
 -------------
 
-Please see the attached Forkonomics.md
+
+The Forkonomics framework is a protocol for attaching value transfers to a particular bundle of facts and propositions. The fundamental pillar of this protocol is the principle of forking: Tokens can be forked into different branches. Each branch is associated with a set of arbitrators. Arbitrators represent certain sets of facts and propositions. Smart contracts can read these arbitrators, their facts and the proposition from each branch and act upon these facts.
+
+The goverance in forkonomics always follows the same pattern. Usually the arbitration or governmental decision are made by preselected arbitrators. This is very efficient, as these arbitrators do quick decision and they will be bonded to make valuable decisions. 
+In case the community finds these arbitrators decision questionable, there will be a much slower and involving decision process. The process of forking the system and deselcting bad arbitrators.  
+
+Using this principle, any escalated contention about a correct decision of an arbitrator will be resolved in a very liberal manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch. Minority branches will never be stopped, these communities are free to grow up another new economy with different arbitrators.
+
+This subjectivocracy approach is combined with economic abstraction. The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol and govered by the arbitrators of the system. The bundled value of these tokens represented by this exchange traded token fund (ETTF) will serve a currency to safely transfer value conditional to a bundle of facts. 
+
+Please see the attached Forkonomics.md [Frokonomics md](https://github.com/josojo/subjectivocracy/Forkonomics.md) for the long version.
 
 
 Audit
@@ -38,10 +48,8 @@ Please install at least node version >=7 for `async/await` for a correct executi
 ### Run all tests 
 
 ```bash
-truffle test -s
+truffle test 
 ```
-The flag -s runs the tests in a silence mode. Additionally the flag -g can be added to plot the gas costs per test.
-
 
 Compile and Deploy
 ------------------
@@ -58,7 +66,6 @@ truffle compile --all
 ```bash
 truffle migrate --network NETWORK-NAME
 ```
-
 
 
 

@@ -93,7 +93,7 @@ contract ForkonomicToken {
         int256 bal = 0;
         while (branch != NULL_HASH) {
             bal += balanceChange[branch][keccak256(abi.encodePacked(addr, acct))];
-            branch = fSystem.getParentHash(branch);
+            branch = fSystem.branchParentHash(branch);
         }
         return uint256(bal);
     }
@@ -115,10 +115,10 @@ contract ForkonomicToken {
 
     function boxTransfer(address addr, uint256 amount, bytes32 branch, bytes32 fromBox, bytes32 toBox)
     public returns (bool) {
-        uint256 branchWindow = fSystem.getWindowOfBranch(branch);
+        uint256 branchWindow = fSystem.branchWindow(branch);
 
         require(amount <= 2100000000000000);
-        require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
+        require(fSystem.branchTimestamp(branch) > 0); // branch must exist
         bytes32 account =keccak256(abi.encodePacked(msg.sender, fromBox));
         require(branchWindow >= lastDebitWindows[account]);  // debits can't go backwards
         require(_isAmountSpendable((account), amount, branch));  // can only spend what you have
@@ -146,10 +146,10 @@ contract ForkonomicToken {
         bytes32 boxSender = keccak256(abi.encodePacked(msg.sender, toBox));
         require(allowed[boxFrom][boxSender][branch] >= amount);
 
-        uint256 branchWindow = fSystem.getWindowOfBranch(branch);
+        uint256 branchWindow = fSystem.branchWindow(branch);
 
         require(amount <= 2100000000000000);
-        require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
+        require(fSystem.branchTimestamp(branch) > 0); // branch must exist
         require(branchWindow >= lastDebitWindows[boxFrom]);  // debits can't go backwards
         require(_isAmountSpendable((boxFrom), amount, branch));  // can only spend what you have
 
@@ -171,7 +171,7 @@ contract ForkonomicToken {
 
     // record any withdrawal on a certain branch 
     function recordBoxWithdrawal(bytes32 box, uint256 amount, bytes32 branch) public returns (bool) {
-        require(fSystem.getTimestampOfBranch(branch) > 0); // branch must exist
+        require(fSystem.branchTimestamp(branch) > 0); // branch must exist
         withdrawalRecord[branch][keccak256(abi.encodePacked(msg.sender, box))] += int256(amount);
         return true;
     }
@@ -184,7 +184,7 @@ contract ForkonomicToken {
             if (withdrawalRecord[branchHash][id] > 0) {
                 return true;
             }
-            branchHash = fSystem.getParentHash(branchHash);
+            branchHash = fSystem.branchParentHash(branchHash);
         }
         return false;
     }
@@ -197,7 +197,7 @@ contract ForkonomicToken {
         int256 bal = 0;
         while (branchHash != NULL_HASH && branchHash != earliestPossibleBranch) {
             bal += withdrawalRecord[branchHash][id];
-            branchHash = fSystem.getParentHash(branchHash);
+            branchHash = fSystem.branchParentHash(branchHash);
         }
         require(branchHash != NULL_HASH);
         return uint256(bal);
@@ -213,7 +213,7 @@ contract ForkonomicToken {
         int256 iminBalance = int256(minBalance);
         while (branchHash != NULL_HASH) {
             bal += balanceChange[branchHash][acct];
-            branchHash = fSystem.getParentHash(branchHash);
+            branchHash = fSystem.branchParentHash(branchHash);
             if (bal >= iminBalance) {
                 return true;
             }
