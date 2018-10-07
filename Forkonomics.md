@@ -8,7 +8,7 @@ Alexander Herrmann
 
 2018-08-30
 
-### This is a work-in-progress. It is not yet complete.
+### Forkonomics = Subjectivocracy + Economic Abstraction
 
 
 ## Abstract

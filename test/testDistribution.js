@@ -76,16 +76,6 @@ contract('Distribution - interaction with RealityCheck', function (accounts) {
 
   })
 
-  it('Creating new branches', async () => {
-  	fSystem = await ForkonomicSystem.deployed();
-    const keyForArbitrators = await fSystem.createArbitratorWhitelist.call([arbitrator0])
-    await fSystem.createArbitratorWhitelist([arbitrator0])
-    const genesis_branch = await fSystem.genesisBranchHash();
-    const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
-    await increaseTime(waitingTime)
-    newBranchHash =  await fSystem.createBranch.call(genesis_branch, keyForArbitrators)
-	await fSystem.createBranch(genesis_branch, keyForArbitrators)
-  })
 
 
   it('setup realityCheck', async () => {
@@ -94,8 +84,19 @@ contract('Distribution - interaction with RealityCheck', function (accounts) {
     const openingTs = await distribution.openingTs();
   	await increaseTimeTo(openingTs)
   	await realityCheck.submitAnswer(questionId, padAddressToBytes32(futureBalanceHolder), 200000, {value: 100000000})
-  	const timeout = (await distribution.minTimeout()).toNumber()
+  	const timeout = (await realityCheck.getQuestionFinalizationTs(questionId)).toNumber()
   	await increaseTime(timeout+1)
+  })
+  
+  it('Creating new branches', async () => {
+    fSystem = await ForkonomicSystem.deployed();
+    const keyForArbitrators = await fSystem.createArbitratorWhitelist.call([arbitrator0])
+    await fSystem.createArbitratorWhitelist([arbitrator0])
+    const genesis_branch = await fSystem.genesisBranchHash();
+    const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
+    await increaseTime(waitingTime)
+    newBranchHash =  await fSystem.createBranch.call(genesis_branch, keyForArbitrators)
+  await fSystem.createBranch(genesis_branch, keyForArbitrators)
   })
 
   it('check that the future balance holder will receive their funds', async ()=>{

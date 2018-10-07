@@ -93,7 +93,7 @@ contract Distribution {
         // ensure that fundsReceiver is the right party and that the question_ID fits
         address fundsReceiver = address(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
-        require(fSystem.branchTimestamp(branch) >= minTimeout+fSystem.WINDOWTIMESPAN());
+        require(fSystem.branchTimestamp(branch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN());
         // send acutal funds to another distribution contract
         require(forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, branch), branch));
 

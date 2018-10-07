@@ -84,6 +84,8 @@ contract ForkonomicETTF is ForkonomicToken {
          // ensure that arbitrator is white-listed
         require(fSystem.isArbitratorWhitelisted(arbitrator, executionbranch));
 
+        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN());
+
         // get answer from relaityCheck
         bytes32 deal = keccak256(abi.encodePacked(originalbranch, forkonomicToken, balanceChange_, compensation, msg.sender));
         string memory question = string(abi.encodePacked("From all offers for the fETTF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));

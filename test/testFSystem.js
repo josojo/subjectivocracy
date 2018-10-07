@@ -37,12 +37,12 @@ contract("ForkonomicSystem", (accounts) => {
 
 	      const genesis_branch = await fSystem.genesisBranchHash();
 	      const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
-    await increaseTime(waitingTime)
+    	  await increaseTime(waitingTime)
 	      const newBranchHash =  await fSystem.createBranch.call(genesis_branch, keyForArbitrators)
 	      await fSystem.createBranch(genesis_branch, keyForArbitrators)
 
-	      assert.equal(await  fSystem.getParentHash(newBranchHash), genesis_branch, "parentHash is not stored correctly");
+	      assert.equal(await  fSystem.branchParentHash(newBranchHash), genesis_branch, "parentHash is not stored correctly");
 
-	      assert.notEqual(await  fSystem.getParentHash(newBranchHash), newBranchHash, "parentHash is not stored correctly");
+	      assert.notEqual(await  fSystem.branchParentHash(newBranchHash), newBranchHash, "parentHash is not stored correctly");
 	  })
 })

@@ -6,7 +6,7 @@ contract ForkonomicSystem {
     event BranchCreated(bytes32 hash, bytes32 whiteList_id);
 
     bytes32 public NULL_HASH = "";
-    uint256 public WINDOWTIMESPAN = 86400; 
+    uint32 public WINDOWTIMESPAN = 86400; 
 
     // index_arbitrators => arbitrator => isSelected
     mapping(bytes32=>mapping(address=>bool)) public arbitratorWhitelists;

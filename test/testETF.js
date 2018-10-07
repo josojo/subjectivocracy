@@ -47,25 +47,24 @@ contract('ForkonomicETTF- initialization', function (accounts) {
 	await fETTF.proposeInvestment(branch, fToken.address, balanceChange, compensation, arbitrator1, nullHash, {from: tester, value: minBond}) 
   })
 
-  it('append new branch', async () => {
-  	const keyForArbitrators = await fSystem.createArbitratorWhitelist.call([arbitrator1])
-    await fSystem.createArbitratorWhitelist([arbitrator1])
-    const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
-    await increaseTime(waitingTime)
-    newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
-    await fSystem.createBranch(branch, keyForArbitrators)
-  })
-
   it('decline the investment proposal by realityCheck', async () => {
     const openingTs = await fETTF.openingTs();
   	await increaseTimeTo(openingTs)
   	const nullHash = await fSystem.NULL_HASH();
   	const minBond = (await fETTF.minQuestionFunding()).toNumber();
   	await realityCheck.submitAnswer(questionId, nullHash, minBond, {value: minBond})
-  	const timeout = (await fETTF.minTimeout()).toNumber()
+  	const timeout = (await realityCheck.getQuestionFinalizationTs(questionId)).toNumber()
   	await increaseTime(timeout+1)
   })
 
+  it('append new branch', async () => {
+    const keyForArbitrators = await fSystem.createArbitratorWhitelist.call([arbitrator1])
+    await fSystem.createArbitratorWhitelist([arbitrator1])
+    const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
+    await increaseTime(waitingTime)
+    newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
+    await fSystem.createBranch(branch, keyForArbitrators)
+  })
   it('proposer needs to get his funds back', async () => {
   	   const nullHash = await fSystem.NULL_HASH();
   	await fETTF.executeInvestmentRequest(questionId, newBranchHash, branch,fToken.address, balanceChange, compensation, arbitrator1, nullHash)

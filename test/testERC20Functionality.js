@@ -96,6 +96,7 @@ contract('ForkonomicERC20 - transferFrom', function (accounts) {
   let fToken
   let branch
   let fSystem
+  let newBranchHash
   beforeEach(async function () {
       fToken = await ForkonomicToken.deployed()
       fSystem = await ForkonomicSystem.deployed()
@@ -139,7 +140,7 @@ contract('ForkonomicERC20 - transferFrom', function (accounts) {
           await fSystem.createArbitratorWhitelist([arbitrator0])
           const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
           await increaseTime(waitingTime)
-          const newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
+          newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
           await fSystem.createBranch(branch, keyForArbitrators)
           await fToken.approve(to, amount, newBranchHash,{ from: from})
           await assertRejects(fToken.transferFrom(from, to, amount, branch, { from: to}));
@@ -153,7 +154,6 @@ contract('ForkonomicERC20 - transferFrom', function (accounts) {
         const amount = 100;
 
         it('last debit window not met', async function () {
-          const newBranchHash = (await fSystem.getWindowBranches(1))[0]
           await fToken.approve(to, amount, newBranchHash,{ from: from})
           await fToken.transferFrom(from, to, amount, newBranchHash, { from: to });
           branch = await fSystem.genesisBranchHash.call();
