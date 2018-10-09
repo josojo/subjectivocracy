@@ -20,7 +20,7 @@ In case the community finds these arbitrators decision questionable, there will 
 
 Using this principle, any escalated contention about a correct decision of an arbitrator will be resolved in a very liberal manner: Every participant must make his own choice on which branch - a bundle of propositions - he would like to follow. If his subjective decision coincides with the crowd, he will follow the main branch. If his decision does not match the majority, he will be left behind on a minority branch. Minority branches will never be stopped, these communities are free to grow up another new economy with different arbitrators.
 
-This subjectivocracy approach is combined with economic abstraction. The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol and govered by the arbitrators of the system. The bundled value of these tokens represented by this exchange traded token fund (ETTF) will serve a currency to safely transfer value conditional to a bundle of facts. 
+This subjectivocracy approach is combined with economic abstraction. The Forkonomics Fund is a fund of tokens supporting the forkonomic protocol and governed by the arbitrators of the system. Each token of the fund will be a valuable token operating on all branches of the system. If the subjectivocratic split happens, the value proposition or revenue stream of these tokens will also branch into these different forks. Thereby only the forks with the right decision of the right arbitrators will give the fund a high evaluation, as on the other branches the tokens have no proper value proposition or revenue stream. The bundled value of these tokens represented by this exchange traded token fund (ETTF) will serve a currency to safely transfer value conditional to a bundle of facts.
 
 # Introduction
 
@@ -78,7 +78,7 @@ Dapp building on top of the forkonomic system will be done in such a manner that
 
 ### Forkonomics-ETTF
 
-If there are any successful dapps using the forkonomic-token protocol, then these tokens can be bundled in a forkonomic-Exchange-Traded-Token-Fund (ETTF). Of course, the forkonomic-ETTF would have its own token, the FFT (ForkonomicFund Token), tracking the ETTFs value. The FFTw would also follow the forkonomic protocol. Other Forkonomic tokens would be added to the ETTF according to strict, predefined rules. The decision on whether a token meets these rules would be found with the following process:
+If there are any successful dapps issuing a the forkonomic-token, then these tokens can be bundled in a forkonomic-Exchange-Traded-Token-Fund (ETTF). Of course, the forkonomic-ETTF would have its own token, the FFT (ForkonomicFund Token), tracking the ETTFs value. The FFTw would also follow the forkonomic protocol. Other Forkonomic tokens would be added to the ETTF according to strict, predefined rules. The decision on whether a token meets these rules would be found with the following process:
 1. Anyone can make a proposal to add or remove tokens to the fund
 2. The fund will take the proposal and make a question to realit.io and a current arbitrator, whether this proposal should be accepted.
 3. Realit.io will answer this question
@@ -131,7 +131,7 @@ We can imagine a wide spread of application of this forkonomics system. Here, we
 3. Higher financial evaluation: If the forkonomic token of a revenue earning dapp is added to the ETTF for the usage of a currency in the system, then many tokens are locked away, which increase the value of the remaining ones.
 
 Additionally, the issued token might be less perceived as a security due to the forking nature and issuing a token as a forkonomic token helps to build this forkonomics system in general.    
-
+People might say that it is impossible to fork a company and all their assests. That is right, but what happens naturally in such a system is that the revenue stream of fees will be branched. This branching has the consequence that the tokens issued by these companies will have only value at branches, which are heavily in use and generate revenue for the company. 
 
 ### Governance in Forknomonics
 
