@@ -49,7 +49,7 @@ contract('ForkonomicETTF- initialization', function (accounts) {
 
   it('decline the investment proposal by realityCheck', async () => {
     const openingTs = await fETTF.openingTs();
-  	await increaseTimeTo(openingTs)
+  	await increaseTimeTo(openingTs.toNumber())
   	const nullHash = await fSystem.NULL_HASH();
   	const minBond = (await fETTF.minQuestionFunding()).toNumber();
   	await realityCheck.submitAnswer(questionId, nullHash, minBond, {value: minBond})

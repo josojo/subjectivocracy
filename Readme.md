@@ -32,6 +32,8 @@ Install
 -------
 ### Install requirements with npm:
 
+Install truffle 5.0 globally. Then:
+
 ```bash
 npm install
 ```

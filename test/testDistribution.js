@@ -68,22 +68,21 @@ contract('Distribution - interaction with RealityCheck', function (accounts) {
   it('distribution setup', async () => {
   	//setting up the distribution token
   	distribution = await Distribution.deployed()
-	await distribution.setRealityVariables(ForkonomicToken.address, RealityCheck.address, ForkonomicSystem.address)
+	  await distribution.setRealityVariables(ForkonomicToken.address, RealityCheck.address, ForkonomicSystem.address)
   	await distribution.injectReward([futureBalanceHolder],[reward])
   	await distribution.finalize();
   	questionId = await distribution.askRealityCheck.call(arbitrator0)
   	await distribution.askRealityCheck(arbitrator0)
-
   })
-
-
 
   it('setup realityCheck', async () => {
   	//supply answer in realitycheck
     realityCheck = await RealityCheck.deployed()
     const openingTs = await distribution.openingTs();
-  	await increaseTimeTo(openingTs)
-  	await realityCheck.submitAnswer(questionId, padAddressToBytes32(futureBalanceHolder), 200000, {value: 100000000})
+    console.log(openingTs.toString())
+  	await increaseTimeTo(openingTs.toNumber())
+    console.log(await timestamp())
+  	await realityCheck.submitAnswer(questionId, padAddressToBytes32(futureBalanceHolder), 100000000, {value: 100000000})
   	const timeout = (await realityCheck.getQuestionFinalizationTs(questionId)).toNumber()
   	await increaseTime(timeout+1)
   })
@@ -96,7 +95,7 @@ contract('Distribution - interaction with RealityCheck', function (accounts) {
     const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
     await increaseTime(waitingTime)
     newBranchHash =  await fSystem.createBranch.call(genesis_branch, keyForArbitrators)
-  await fSystem.createBranch(genesis_branch, keyForArbitrators)
+    await fSystem.createBranch(genesis_branch, keyForArbitrators)
   })
 
   it('check that the future balance holder will receive their funds', async ()=>{

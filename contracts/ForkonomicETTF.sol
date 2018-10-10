@@ -79,12 +79,12 @@ contract ForkonomicETTF is ForkonomicToken {
     function executeInvestmentRequest(bytes32 questionId, bytes32 executionbranch, bytes32 originalbranch, address forkonomicToken, int balanceChange_, int compensation, address arbitrator, bytes32 fromBox)
     public {
         // check that original branch is a father of executionbranch:
-        require(fSystem.isFatherOfBranch(originalbranch, executionbranch));
+        require(fSystem.isFatherOfBranch(originalbranch, executionbranch), " branch is not a child of original branch");
 
          // ensure that arbitrator is white-listed
-        require(fSystem.isArbitratorWhitelisted(arbitrator, executionbranch));
+        require(fSystem.isArbitratorWhitelisted(arbitrator, executionbranch), "arbitrator is not white-listed");
 
-        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN());
+        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN(), "time is not correct");
 
         // get answer from relaityCheck
         bytes32 deal = keccak256(abi.encodePacked(originalbranch, forkonomicToken, balanceChange_, compensation, msg.sender));
@@ -121,7 +121,7 @@ contract ForkonomicETTF is ForkonomicToken {
    
     function redeemRealityFundTokens(bytes32 branch, uint amount, address [] forkonomicTokens) public {
         // transfer tokens, which are about to be redeemed
-        require(transferFrom(msg.sender, this, amount, branch));
+        require(transferFrom(msg.sender, this, amount, branch), "transfer did not pass in redeemRealityFundTokens");
 
         //calculate the total amount of outstanding ForkonomicETTF-tokens
         int256 amountOutstandingETTFToken = 0;
@@ -135,7 +135,7 @@ contract ForkonomicETTF is ForkonomicToken {
         for (uint i=0; i < forkonomicTokens.length; i++) {
             uint256 holdings = ForkonomicToken(forkonomicTokens[i]).balanceOf(this, branch);
             //make safe mul
-            require(ForkonomicToken(forkonomicTokens[i]).transfer(msg.sender, amount * holdings / uint(amountOutstandingETTFToken), branch));
+            require(ForkonomicToken(forkonomicTokens[i]).transfer(msg.sender, amount * holdings / uint(amountOutstandingETTFToken), branch), "transfer of funds was not successful");
         }
 
     }

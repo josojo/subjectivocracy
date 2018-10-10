@@ -44,13 +44,13 @@ contract SubChain is StandardToken {
     }
     
     function deposit (uint amount) public {
-        require(!isChallenged);
+        require(!isChallenged, "Subchain is already chalenged");
         require(collateral.transferFrom(msg.sender, this, amount, fundingBranch));
         balances[msg.sender] = balances[msg.sender].add(amount);
     }
     
     function withdraw (uint amount) public {
-        require(!isChallenged);
+        require(!isChallenged, "Subchain is already chalenged");
         balances[msg.sender] = balances[msg.sender].sub(amount);
         require(collateral.transfer(msg.sender, amount, fundingBranch));
     }
@@ -59,11 +59,11 @@ contract SubChain is StandardToken {
         isChallenged = true;
         challenger = msg.sender;
         challengeTime = now;
-        require(collateral.transferFrom(msg.sender, this, bond, fundingBranch));
+        require(collateral.transferFrom(msg.sender, this, bond, fundingBranch), "transferFrom was not possible");
     }
      
     function withdrawAfterChallenge (uint amount, bytes32 branch) public {
-        require(isChallenged);
+        require(isChallenged, "not yet challenged");
         require(collateral.hasBoxWithdrawal(msg.sender, NULL_HASH, branch, fundingBranch));
         require(collateral.transfer(msg.sender, amount, branch));
         require(collateral.recordBoxWithdrawal(NULL_HASH, amount, branch));
@@ -71,7 +71,7 @@ contract SubChain is StandardToken {
 
     //arbitrator can withdraw his bond + challenger funds on all branches, where he is still a valid arbitrato
     function withdrawalForArbitrator(bytes32 branch) public {
-        require(isChallenged);
+        require(isChallenged, "not yet challenged");
         require(fSystem.branchTimestamp(branch) + fSystem.WINDOWTIMESPAN() > challengeTime);
         require(fSystem.isArbitratorWhitelisted(arbitrator, branch));
         require(collateral.hasBoxWithdrawal(arbitrator, NULL_HASH, branch, fundingBranch));
@@ -82,11 +82,11 @@ contract SubChain is StandardToken {
     //challenger can withdraw his bond + arbitrator funds on all branches,
     // where the arbitrator is no longer a valid arbitrato
     function withdrawalForChallenger(bytes32 branch) public {
-        require(isChallenged);
-        require(fSystem.branchTimestamp(branch) + fSystem.WINDOWTIMESPAN() > challengeTime);
-        require(!fSystem.isArbitratorWhitelisted(arbitrator, branch));
-        require(collateral.hasBoxWithdrawal(challenger, NULL_HASH, branch, fundingBranch));
-        require(collateral.transfer(challenger, 2*bond, branch));
-        require(collateral.recordBoxWithdrawal(NULL_HASH, 2*bond, branch));
+        require(isChallenged, "not yet challenged");
+        require(fSystem.branchTimestamp(branch) + fSystem.WINDOWTIMESPAN() > challengeTime, "challengingTime too early");
+        require(!fSystem.isArbitratorWhitelisted(arbitrator, branch), "arbitrator is not white-listed");
+        require(collateral.hasBoxWithdrawal(challenger, NULL_HASH, branch, fundingBranch), "hasBoxWithdrawal ==false");
+        require(collateral.transfer(challenger, 2*bond, branch), "transfer failed");
+        require(collateral.recordBoxWithdrawal(NULL_HASH, 2*bond, branch), " recordBoxWithdrawal failed");
     }
 }

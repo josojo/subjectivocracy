@@ -41,13 +41,13 @@ contract ForkonomicSystem {
     public returns (bytes32) {
 
         bytes32 branchHash = keccak256(abi.encodePacked(parentBranchHash, whitelist_id));
-        require(branchHash != NULL_HASH);
+        require(branchHash != NULL_HASH, "branch hash should not be the NULL_HASH");
 
         // Your branch must not yet exist, the parent branch must exist.
         // Check existence by timestamp, all branches have one.
-        require(branchTimestamp[branchHash] == 0);
-        require(branchTimestamp[parentBranchHash] > 0);
-        require(now - (now % WINDOWTIMESPAN) >= branchTimestamp[parentBranchHash] + WINDOWTIMESPAN);
+        require(branchTimestamp[branchHash] == 0, "branch must not exist");
+        require(branchTimestamp[parentBranchHash] > 0, "parent branch must exist");
+        require(now - (now % WINDOWTIMESPAN) >= branchTimestamp[parentBranchHash] + WINDOWTIMESPAN, "there must be one week delay between parent and son branch");
 
         // The window should be the window after the previous branch.
         // You can come back and add a window after it has passed.

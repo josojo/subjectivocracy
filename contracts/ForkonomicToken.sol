@@ -47,7 +47,7 @@ contract ForkonomicToken {
         bytes32 genesisBranchHash = fSystem.genesisBranchHash();
         uint256 numFunded = initalFundingContracts.length;
 
-        require(numFunded < 11);
+        require(numFunded < 12, " too many funding accounts");
 
         for (uint256 i=0; i < numFunded; i++) {
             bytes32 account = keccak256(abi.encodePacked(initalFundingContracts[i], NULL_HASH));
@@ -117,11 +117,11 @@ contract ForkonomicToken {
     public returns (bool) {
         uint256 branchWindow = fSystem.branchWindow(branch);
 
-        require(amount <= 2100000000000000);
-        require(fSystem.branchTimestamp(branch) > 0); // branch must exist
+        require(amount <= 2100000000000000, " sending amount bigger than totalSupply");
+        require(fSystem.branchTimestamp(branch) > 0, " branch must exist"); 
         bytes32 account =keccak256(abi.encodePacked(msg.sender, fromBox));
-        require(branchWindow >= lastDebitWindows[account]);  // debits can't go backwards
-        require(_isAmountSpendable((account), amount, branch));  // can only spend what you have
+        require(branchWindow >= lastDebitWindows[account], " branchWindow >= lastDebitWindows[account]");  // debits can't go backwards
+        require(_isAmountSpendable((account), amount, branch), " amount was not spendable");  // can only spend what you have
 
         lastDebitWindows[account] = branchWindow;
         balanceChange[branch][account] -= int256(amount);
@@ -148,10 +148,10 @@ contract ForkonomicToken {
 
         uint256 branchWindow = fSystem.branchWindow(branch);
 
-        require(amount <= 2100000000000000);
-        require(fSystem.branchTimestamp(branch) > 0); // branch must exist
-        require(branchWindow >= lastDebitWindows[boxFrom]);  // debits can't go backwards
-        require(_isAmountSpendable((boxFrom), amount, branch));  // can only spend what you have
+        require(amount <= 2100000000000000, " amount higher than totalSupply");
+        require(fSystem.branchTimestamp(branch) > 0, "branch must exist"); // branch must exist
+        require(branchWindow >= lastDebitWindows[boxFrom], "debits cant go backwards");  // debits can't go backwards
+        require(_isAmountSpendable((boxFrom), amount, branch), "amount must be spendable");  // can only spend what you have
 
         lastDebitWindows[boxFrom] = branchWindow;
         balanceChange[branch][boxFrom] -= int256(amount);
@@ -208,7 +208,7 @@ contract ForkonomicToken {
     // This uses less gas than balanceOfAbove, which always has to go all the way to the root.
     function _isAmountSpendable(bytes32 acct, uint256 minBalance, bytes32 branchHash)
     public constant returns (bool) {
-        require(minBalance <= 2100000000000000);
+        require(minBalance <= 2100000000000000, "amount bigger than totalSupply");
         int256 bal = 0;
         int256 iminBalance = int256(minBalance);
         while (branchHash != NULL_HASH) {

@@ -1,3 +1,4 @@
+    let Web3Utils = require('web3-utils');
 
   /*
    How to avoid using try/catch blocks with promises' that could fail using async/await
@@ -31,12 +32,12 @@
     }
   }
 
-  const timestamp = async (block = 'latest') => web3.eth.getBlock(block).timestamp
+  const timestamp = async (block = 'latest') =>  web3.eth.getBlock(block).then(t=>Web3Utils.hexToNumber(t.timestamp))
 
   const jsonrpc = '2.0'
   const id = 0
   const send = (method, params = []) =>
-    web3.currentProvider.sendAsync({ id, jsonrpc, method, params })
+    web3.currentProvider.send({ id, jsonrpc, method, params })
 
   const timeTravel = async seconds => {
     await send('evm_increaseTime', [seconds])
@@ -69,7 +70,7 @@
     const id = Date.now();
 
     return new Promise((resolve, reject) => {
-      web3.currentProvider.sendAsync({
+      web3.currentProvider.send({
         jsonrpc: '2.0',
         method: 'evm_increaseTime',
         params: [duration],
@@ -77,7 +78,7 @@
       }, err1 => {
         if (err1) return reject(err1);
 
-        web3.currentProvider.sendAsync({
+        web3.currentProvider.send({
           jsonrpc: '2.0',
           method: 'evm_mine',
           params: [],
@@ -99,7 +100,10 @@
   async function increaseTimeTo (target) {
     const now = (await timestamp());
 
-    if (target < now) throw Error(`Cannot increase current time(${now}) to a moment in the past(${target})`);
+    if (target < now) { 
+      console.log(`Cannot increase current time(${now}) to a moment in the past(${target})`);
+      return increaseTime(0);
+    }
     const diff = target - now;
     return increaseTime(diff);
   }

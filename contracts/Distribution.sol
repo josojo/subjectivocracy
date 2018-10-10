@@ -89,13 +89,13 @@ contract Distribution {
     function delayedDistributionLeftOverTokens(bytes32 branch, bytes32 questionId, address arbitrator)
     public {
       // ensure that arbitrator is white-listed
-        require(fSystem.isArbitratorWhitelisted(arbitrator, branch));
+        require(fSystem.isArbitratorWhitelisted(arbitrator, branch), "arbitrator not white-listed");
         // ensure that fundsReceiver is the right party and that the question_ID fits
         address fundsReceiver = address(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
-        require(fSystem.branchTimestamp(branch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN());
+        require(fSystem.branchTimestamp(branch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN(), " branch not in right time window");
         // send acutal funds to another distribution contract
-        require(forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, branch), branch));
+        require(forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, branch), branch), " transfer of funds was not successful");
 
         emit Withdraw(branch, fundsReceiver);
     }
