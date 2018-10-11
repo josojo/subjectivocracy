@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
 
 import "./ForkonomicToken.sol";
-import "@realitio/realitio-contracts/truffle/contracts/RealityCheck.sol";
+import "@josojo/realitio-contracts/truffle/contracts/Realitio.sol";
 import "./ForkonomicSystem.sol";
 
 
@@ -20,7 +20,7 @@ contract ForkonomicETTF is ForkonomicToken {
     uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
 
     //interfaces
-    RealityCheck public realityCheck;
+    Realitio public realityCheck;
 
     // branch => token => change
     mapping(bytes32 => mapping(address => int)) public fundHoldingChange; 
@@ -37,7 +37,7 @@ contract ForkonomicETTF is ForkonomicToken {
      // minimul payment for a funding request is 0.05 ETH. This is used in realitycheck
 
     constructor(
-        RealityCheck realityCheck_, 
+        Realitio realityCheck_, 
         ForkonomicSystem fSystem_,
         address [] funding
     )
@@ -84,12 +84,12 @@ contract ForkonomicETTF is ForkonomicToken {
          // ensure that arbitrator is white-listed
         require(fSystem.isArbitratorWhitelisted(arbitrator, executionbranch), "arbitrator is not white-listed");
 
-        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN(), "time is not correct");
+        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getFinalizeTS(questionId) + fSystem.WINDOWTIMESPAN(), "time is not correct");
 
         // get answer from relaityCheck
         bytes32 deal = keccak256(abi.encodePacked(originalbranch, forkonomicToken, balanceChange_, compensation, msg.sender));
         string memory question = string(abi.encodePacked("From all offers for the fETTF, the following deal was the best:", bytes32ToString(bytes32(deal)), "?"));
-        bytes32 contentHash = keccak256(templateId, openingTs, question);     
+        bytes32 contentHash = keccak256(abi.encodePacked(templateId, openingTs, question));     
         uint ans = uint(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond));
 
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 

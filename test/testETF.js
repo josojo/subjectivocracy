@@ -9,7 +9,7 @@ const { wait } = require('@digix/tempo')(web3)
 
 
 const ForkonomicSystem = artifacts.require('ForkonomicSystem');
-const RealityCheck = artifacts.require('RealityCheck');
+const Realitio = artifacts.require('Realitio');
 const ForkonomicToken = artifacts.require('ForkonomicToken');
 const ForkonomicETTF = artifacts.require('ForkonomicETTF');
 
@@ -33,7 +33,7 @@ contract('ForkonomicETTF- initialization', function (accounts) {
       fSystem = await ForkonomicSystem.deployed()
       branch = await fSystem.genesisBranchHash.call()
       fETTF = await ForkonomicETTF.deployed()
-      realityCheck = await RealityCheck.deployed()
+      realityCheck = await Realitio.deployed()
   });
 
   it('propose new investment for ETTF', async () => {
@@ -53,7 +53,7 @@ contract('ForkonomicETTF- initialization', function (accounts) {
   	const nullHash = await fSystem.NULL_HASH();
   	const minBond = (await fETTF.minQuestionFunding()).toNumber();
   	await realityCheck.submitAnswer(questionId, nullHash, minBond, {value: minBond})
-  	const timeout = (await realityCheck.getQuestionFinalizationTs(questionId)).toNumber()
+  	const timeout = (await realityCheck.getFinalizeTS(questionId)).toNumber()
   	await increaseTime(timeout+1)
   })
 

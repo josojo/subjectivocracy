@@ -11,7 +11,7 @@ const { wait } = require('@digix/tempo')(web3)
 
 
 const ForkonomicSystem = artifacts.require('ForkonomicSystem');
-const RealityCheck = artifacts.require('RealityCheck');
+const Realitio = artifacts.require('Realitio');
 const ForkonomicToken = artifacts.require('ForkonomicToken');
 const Distribution = artifacts.require('Distribution');
 
@@ -35,7 +35,7 @@ contract('Distribution- initialization', function (accounts) {
   })
 
   it('Reality Parameters can be set', async () => {
-  	await distribution.setRealityVariables(ForkonomicToken.address, RealityCheck.address, ForkonomicSystem.address)
+  	await distribution.setRealityVariables(ForkonomicToken.address, Realitio.address, ForkonomicSystem.address)
   	assert.equal((await distribution.fSystem()), ForkonomicSystem.address)
 
   })
@@ -46,12 +46,12 @@ contract('Distribution- initialization', function (accounts) {
 
   it('no more settings work after the finalization', async () => {
   	await distribution.finalize();
-  	await assertRejects(distribution.setRealityVariables(ForkonomicToken.address, RealityCheck.address, ForkonomicSystem.address))
+  	await assertRejects(distribution.setRealityVariables(ForkonomicToken.address, Realitio.address, ForkonomicSystem.address))
 	await assertRejects(distribution.injectReward([futureBalanceHolder],[reward]))
   })
  })
 
-contract('Distribution - interaction with RealityCheck', function (accounts) {
+contract('Distribution - interaction with Realitio', function (accounts) {
   const [arbitrator0, arbitrator1, balanceHolder, futureBalanceHolder] = accounts
 
   let distribution
@@ -68,22 +68,22 @@ contract('Distribution - interaction with RealityCheck', function (accounts) {
   it('distribution setup', async () => {
   	//setting up the distribution token
   	distribution = await Distribution.deployed()
-	  await distribution.setRealityVariables(ForkonomicToken.address, RealityCheck.address, ForkonomicSystem.address)
+	  await distribution.setRealityVariables(ForkonomicToken.address, Realitio.address, ForkonomicSystem.address)
   	await distribution.injectReward([futureBalanceHolder],[reward])
   	await distribution.finalize();
-  	questionId = await distribution.askRealityCheck.call(arbitrator0)
-  	await distribution.askRealityCheck(arbitrator0)
+  	questionId = await distribution.askRealitio.call(arbitrator0)
+  	await distribution.askRealitio(arbitrator0)
   })
 
   it('setup realityCheck', async () => {
   	//supply answer in realitycheck
-    realityCheck = await RealityCheck.deployed()
+    realityCheck = await Realitio.deployed()
     const openingTs = await distribution.openingTs();
     console.log(openingTs.toString())
   	await increaseTimeTo(openingTs.toNumber())
     console.log(await timestamp())
   	await realityCheck.submitAnswer(questionId, padAddressToBytes32(futureBalanceHolder), 100000000, {value: 100000000})
-  	const timeout = (await realityCheck.getQuestionFinalizationTs(questionId)).toNumber()
+  	const timeout = (await realityCheck.getFinalizeTS(questionId)).toNumber()
   	await increaseTime(timeout+1)
   })
   

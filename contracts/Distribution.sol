@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
 
 import "./ForkonomicToken.sol";
-import "@realitio/realitio-contracts/truffle/contracts/RealityCheck.sol";
+import "@josojo/realitio-contracts/truffle/contracts/Realitio.sol";
 
 
 contract Distribution {
@@ -11,7 +11,7 @@ contract Distribution {
     bool isFinished;
 
     ForkonomicToken public forkonomicToken;
-    RealityCheck public realityCheck;
+    Realitio public realityCheck;
     ForkonomicSystem public fSystem;
    
     event Withdraw(bytes32 hashid, address user);
@@ -41,7 +41,7 @@ contract Distribution {
     }
 
     // variables, which we were not able to hand over to the constructor
-    function setRealityVariables(ForkonomicToken _forkonomicToken, RealityCheck _realityCheck, ForkonomicSystem _fSystem)
+    function setRealityVariables(ForkonomicToken _forkonomicToken, Realitio _realityCheck, ForkonomicSystem _fSystem)
     public 
     isOwner()
     notYetFinished()
@@ -70,11 +70,11 @@ contract Distribution {
         isFinished = true;
     }
 
-    function askRealityCheck(address arbitrator) public payable returns (bytes32) {
+    function askRealitio(address arbitrator) public payable returns (bytes32) {
         openingTs = uint32(now+7 days);
         minTimeout = 1000;
         realityCheckQuestion = string(abi.encodePacked("Which contract should be able to withdraw funds from ", this, "?"));
-        contentHash = keccak256(templateId, openingTs, realityCheckQuestion); 
+        contentHash = keccak256(abi.encodePacked(templateId, openingTs, realityCheckQuestion)); 
         return realityCheck.askQuestion(templateId, realityCheckQuestion, arbitrator, minTimeout, openingTs, 0);
     }
 
@@ -93,7 +93,7 @@ contract Distribution {
         // ensure that fundsReceiver is the right party and that the question_ID fits
         address fundsReceiver = address(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
-        require(fSystem.branchTimestamp(branch) > realityCheck.getQuestionFinalizationTs(questionId) + fSystem.WINDOWTIMESPAN(), " branch not in right time window");
+        require(fSystem.branchTimestamp(branch) > realityCheck.getFinalizeTS(questionId) + fSystem.WINDOWTIMESPAN(), " branch not in right time window");
         // send acutal funds to another distribution contract
         require(forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, branch), branch), " transfer of funds was not successful");
 
