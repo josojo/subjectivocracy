@@ -116,7 +116,7 @@ contract ForkonomicToken {
         uint256 branchWindow = fSystem.branchWindow(branch);
 
         require(amount <= 2100000000000000, " sending amount bigger than totalSupply");
-        require(fSystem.branchTimestamp(branch) > 0, " branch must exist"); 
+        require(fSystem.doesBranchExist(branch), " branch must exist"); 
         bytes32 account =keccak256(abi.encodePacked(msg.sender, fromBox));
         require(branchWindow >= lastDebitWindows[account], " branchWindow >= lastDebitWindows[account]");  // debits can't go backwards
         require(_isAmountSpendable((account), amount, branch), " amount was not spendable");  // can only spend what you have
@@ -147,7 +147,7 @@ contract ForkonomicToken {
         uint256 branchWindow = fSystem.branchWindow(branch);
 
         require(amount <= 2100000000000000, " amount higher than totalSupply");
-        require(fSystem.branchTimestamp(branch) > 0, "branch must exist"); // branch must exist
+        require(fSystem.doesBranchExist(branch), "branch must exist"); // branch must exist
         require(branchWindow >= lastDebitWindows[boxFrom], "debits cant go backwards");  // debits can't go backwards
         require(_isAmountSpendable((boxFrom), amount, branch), "amount must be spendable");  // can only spend what you have
 

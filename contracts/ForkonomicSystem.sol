@@ -55,7 +55,7 @@ contract ForkonomicSystem {
         branchParentHash[branchHash] = parentBranchHash;
         branchArbitratorsID[branchHash] = whitelist_id;
         //Either timestamp or window is not needed in this construction
-        branchTimestamp[branchHash] = genesisWindowTimestamp + WINDOWTIMESPAN * window;
+        //branchTimestamp[branchHash] = genesisWindowTimestamp + WINDOWTIMESPAN * window;
         branchWindow[branchHash] = window;
         windowBranches[window].push(branchHash);
 
@@ -100,6 +100,10 @@ contract ForkonomicSystem {
             return true;
         else 
             return false;
+    }
+
+    function doesBranchExist(bytes32 branch) public view returns(bool) {
+        return (branch == genesisBranchHash || branchWindow[branch] > 0);
     }
 
     function isFatherOfBranch(bytes32 father, bytes32 son)
