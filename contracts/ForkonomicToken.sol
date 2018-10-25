@@ -36,8 +36,6 @@ contract ForkonomicToken {
     mapping(bytes32 => mapping(bytes32 => mapping(bytes32=> uint256))) public allowed;
 
     uint256 public totalSupply;
-
-
     ForkonomicSystem public fSystem;
 
     constructor(ForkonomicSystem _fSystem, address[] initalFundingContracts)

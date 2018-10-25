@@ -20,6 +20,7 @@ contract('ForkonomicETTF- initialization', function (accounts) {
   const [tester, arbitrator1, balanceHolder, futureBalanceHolder] = accounts
   let fToken
   let branch
+  let branchOriginal
   let fSystem
   let newBranchHash
   let initialBalance 
@@ -44,27 +45,35 @@ contract('ForkonomicETTF- initialization', function (accounts) {
     const minBond = (await fETTF.minQuestionFunding()).toNumber();
     balanceProposer = (await fToken.balanceOf(tester, branch)).toNumber()
     questionId = await fETTF.proposeInvestment.call(branch, fToken.address, balanceChange, compensation, arbitrator1, nullHash, {from: tester, value: minBond}) 
-	await fETTF.proposeInvestment(branch, fToken.address, balanceChange, compensation, arbitrator1, nullHash, {from: tester, value: minBond}) 
+	await fETTF.proposeInvestment(branch, fToken.address, balanceChange, compensation, arbitrator1, nullHash, {from: tester, value: minBond})
+    branchOriginal = branch
   })
 
   it('decline the investment proposal by realityCheck', async () => {
-    const openingTs = await fETTF.openingTs();
+    const openingTs = await fETTF.openingTs.call();
   	await increaseTimeTo(openingTs.toNumber())
-  	const nullHash = await fSystem.NULL_HASH();
-  	const minBond = (await fETTF.minQuestionFunding()).toNumber();
+  	const nullHash = await fSystem.NULL_HASH.call();
+  	const minBond = (await fETTF.minQuestionFunding.call()).toNumber();
   	await realityCheck.submitAnswer(questionId, nullHash, minBond, {value: minBond})
   	const timeout = (await realityCheck.getFinalizeTS(questionId)).toNumber()
-  	await increaseTime(timeout+1)
+  	await increaseTimeTo(timeout+1)
   })
 
-  it('append new branch', async () => {
+  it('append new branches', async () => {
     const keyForArbitrators = await fSystem.createArbitratorWhitelist.call([arbitrator1])
     await fSystem.createArbitratorWhitelist([arbitrator1])
+
+    const nrOfBranches = (await timestamp() - await fSystem.genesisWindowTimestamp.call())/(await fSystem.WINDOWTIMESPAN.call()).toNumber()
+    for (var i = 1; i < nrOfBranches; i++) {
+      newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
+      await fSystem.createBranch(branch, keyForArbitrators)
+      branch = newBranchHash
+    }
     const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
     await increaseTime(waitingTime)
     newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
     await fSystem.createBranch(branch, keyForArbitrators)
-  })
+})
   it('proposer needs to get his funds back', async () => {
   	   const nullHash = await fSystem.NULL_HASH();
   	await fETTF.executeInvestmentRequest(questionId, newBranchHash, branch,fToken.address, balanceChange, compensation, arbitrator1, nullHash)
@@ -73,7 +82,7 @@ contract('ForkonomicETTF- initialization', function (accounts) {
 
   it('proposer needs to get his funds back', async () => {
   	const nullHash = await fSystem.NULL_HASH()
-  	await assertRejects(fETTF.executeInvestmentRequest(questionId, newBranchHash, branch,fToken.address, balanceChange, compensation, arbitrator1, nullHash))
+  	await assertRejects(fETTF.executeInvestmentRequest(questionId, newBranchHash, branchOriginal, fToken.address, balanceChange, compensation, arbitrator1, nullHash))
   	assert.equal((await fToken.balanceOf(tester, newBranchHash)).toNumber(), initialBalance)
   })
 

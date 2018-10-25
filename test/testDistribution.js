@@ -78,29 +78,45 @@ contract('Distribution - interaction with Realitio', function (accounts) {
   it('setup realityCheck', async () => {
   	//supply answer in realitycheck
     realityCheck = await Realitio.deployed()
-    const openingTs = await distribution.openingTs();
+    const openingTs = await distribution.openingTs.call();
     console.log(openingTs.toString())
   	await increaseTimeTo(openingTs.toNumber())
     console.log(await timestamp())
   	await realityCheck.submitAnswer(questionId, padAddressToBytes32(futureBalanceHolder), 100000000, {value: 100000000})
   	const timeout = (await realityCheck.getFinalizeTS(questionId)).toNumber()
-  	await increaseTime(timeout+1)
+    console.log(timeout)
+  	await increaseTimeTo(timeout+1)
   })
   
   it('Creating new branches', async () => {
     fSystem = await ForkonomicSystem.deployed();
     const keyForArbitrators = await fSystem.createArbitratorWhitelist.call([arbitrator0])
     await fSystem.createArbitratorWhitelist([arbitrator0])
-    const genesis_branch = await fSystem.genesisBranchHash();
+    const genesis_branch = await fSystem.genesisBranchHash.call();
+    var branch = genesis_branch
+    console.log(await timestamp())
+    console.log((await fSystem.genesisWindowTimestamp()).toNumber())
+    const nrOfBranches = (await timestamp() - await fSystem.genesisWindowTimestamp.call())/(await fSystem.WINDOWTIMESPAN.call()).toNumber()
+    for (var i = 1; i < nrOfBranches; i++) {
+      newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
+      await fSystem.createBranch(branch, keyForArbitrators)
+      branch = newBranchHash
+    }
     const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
     await increaseTime(waitingTime)
-    newBranchHash =  await fSystem.createBranch.call(genesis_branch, keyForArbitrators)
-    await fSystem.createBranch(genesis_branch, keyForArbitrators)
+    newBranchHash =  await fSystem.createBranch.call(branch, keyForArbitrators)
+    await fSystem.createBranch(branch, keyForArbitrators)
   })
 
   it('check that the future balance holder will receive their funds', async ()=>{
   	  fToken = await ForkonomicToken.deployed()
   	  const prevBalance = (await fToken.balanceOf(futureBalanceHolder, newBranchHash)).toNumber();
+      console.log(await timestamp())
+      console.log((await realityCheck.getFinalizeTS.call(questionId)).toNumber())
+      console.log((await fSystem.branchTimestamp.call(newBranchHash)).toNumber())
+      const waitingTime = (await fSystem.WINDOWTIMESPAN()).toNumber()+1
+      const window = (await fSystem.branchWindow.call(newBranchHash)).toNumber()
+      console.log(window * waitingTime + (await fSystem.genesisWindowTimestamp.call()).toNumber())
   	  await distribution.delayedDistributionLeftOverTokens(newBranchHash, questionId, arbitrator0)
   	  const newBalance = (await fToken.balanceOf(futureBalanceHolder, newBranchHash)).toNumber();
   	  assert.equal(prevBalance + 210000000000000, newBalance, "balances are not update correctly")

@@ -93,7 +93,7 @@ contract Distribution {
         // ensure that fundsReceiver is the right party and that the question_ID fits
         address fundsReceiver = address(realityCheck.getFinalAnswerIfMatches(questionId, contentHash, arbitrator, minTimeout, minBond));
         // ensures that balances are not withdrawn form a branch older than the end of the questionanswer period. 
-        require(fSystem.branchTimestamp(branch) > realityCheck.getFinalizeTS(questionId) + fSystem.WINDOWTIMESPAN(), " branch not in right time window");
+        require(fSystem.isBranchCreatedAfterTS(realityCheck.getFinalizeTS(questionId), branch), " branch not in right time window");
         // send acutal funds to another distribution contract
         require(forkonomicToken.transfer(fundsReceiver, forkonomicToken.balanceOf(this, branch), branch), " transfer of funds was not successful");
 

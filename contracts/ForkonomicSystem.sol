@@ -45,18 +45,17 @@ contract ForkonomicSystem {
 
         // Your branch must not yet exist, the parent branch must exist.
         // Check existence by timestamp, all branches have one.
-        require(branchTimestamp[branchHash] == 0, "branch must not exist");
-        require(branchTimestamp[parentBranchHash] > 0, "parent branch must exist");
-        require(now - (now % WINDOWTIMESPAN) >= branchTimestamp[parentBranchHash] + WINDOWTIMESPAN, "there must be one week delay between parent and son branch");
+        require(branchWindow[branchHash] == 0, "branch must not exist");
+        require(parentBranchHash == genesisBranchHash || branchWindow[parentBranchHash] > 0, "parent branch must exist");
 
-        // The window should be the window after the previous branch.
-        // You can come back and add a window after it has passed.
-        // However, usually you wouldn't want to do this as it would throw away a lot of history.
+         // The window should be the window after the previous branch.
         uint256 window = branchWindow[parentBranchHash] + 1;
+        require(now >= genesisWindowTimestamp + WINDOWTIMESPAN * window, "there must be one week delay between parent and son branch");
 
         branchParentHash[branchHash] = parentBranchHash;
         branchArbitratorsID[branchHash] = whitelist_id;
-        branchTimestamp[branchHash] = now - (now % WINDOWTIMESPAN);
+        //Either timestamp or window is not needed in this construction
+        branchTimestamp[branchHash] = genesisWindowTimestamp + WINDOWTIMESPAN * window;
         branchWindow[branchHash] = window;
         windowBranches[window].push(branchHash);
 
@@ -94,6 +93,13 @@ contract ForkonomicSystem {
             }
         }
         return false;
+    }
+
+    function isBranchCreatedAfterTS(uint256 ts, bytes32 branch) public view returns(bool) {
+        if (branchWindow[branch] * WINDOWTIMESPAN + genesisWindowTimestamp >= ts - WINDOWTIMESPAN)
+            return true;
+        else 
+            return false;
     }
 
     function isFatherOfBranch(bytes32 father, bytes32 son)

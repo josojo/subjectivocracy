@@ -84,7 +84,7 @@ contract ForkonomicETTF is ForkonomicToken {
          // ensure that arbitrator is white-listed
         require(fSystem.isArbitratorWhitelisted(arbitrator, executionbranch), "arbitrator is not white-listed");
 
-        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getFinalizeTS(questionId) + fSystem.WINDOWTIMESPAN(), "time is not correct");
+        require(fSystem.branchTimestamp(executionbranch) > realityCheck.getFinalizeTS(questionId) - fSystem.WINDOWTIMESPAN(), "time is not correct");
 
         // get answer from relaityCheck
         bytes32 deal = keccak256(abi.encodePacked(originalbranch, forkonomicToken, balanceChange_, compensation, msg.sender));

@@ -15,6 +15,8 @@ protocoll. Smart contracts using this token as collateral should aksi process th
  with the usual forkonomic protcoll and can no longer reley on this quick process."
 */
 
+// bondedWorldView
+
 contract SubChain is StandardToken {
     using SafeMath for uint256;
 
