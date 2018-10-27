@@ -1,7 +1,7 @@
 pragma solidity ^0.4.22;
 
 import "./ForkonomicToken.sol";
-import "@josojo/realitio-contracts/truffle/contracts/Realitio.sol";
+import "@realitio/realitio-contracts/truffle/contracts/Realitio.sol";
 import "./ForkonomicSystem.sol";
 
 
