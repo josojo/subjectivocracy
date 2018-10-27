@@ -1,6 +1,6 @@
 {
   "name": "@josojo/forkonomics-contracts",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "realitytoken basic contracts",
   "main": "truffle.js",
   "directories": {
