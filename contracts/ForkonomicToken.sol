@@ -169,7 +169,7 @@ contract ForkonomicToken {
 
     // record any withdrawal on a certain branch 
     function recordBoxWithdrawal(bytes32 box, uint256 amount, bytes32 branch) public returns (bool) {
-        require(fSystem.branchTimestamp(branch) > 0); // branch must exist
+        require(fSystem.doesBranchExist(branch), "branch must exist");
         withdrawalRecord[branch][keccak256(abi.encodePacked(msg.sender, box))] += int256(amount);
         return true;
     }
@@ -197,7 +197,7 @@ contract ForkonomicToken {
             bal += withdrawalRecord[branchHash][id];
             branchHash = fSystem.branchParentHash(branchHash);
         }
-        require(branchHash != NULL_HASH);
+        require(branchHash != NULL_HASH, " branch hash should not follow to the NULL_HASH");
         return uint256(bal);
     }
 
